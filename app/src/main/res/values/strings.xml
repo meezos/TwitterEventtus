@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">TwitterEventtus</string>
+    <string name="menu_settings">Settings</string>
+    <string name="sorry_message">sorry we are still trying to find your followers that are now online</string>
+</resources>

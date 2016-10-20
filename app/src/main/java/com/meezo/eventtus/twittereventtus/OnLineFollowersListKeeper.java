@@ -24,6 +24,7 @@ public class OnLineFollowersListKeeper implements Runnable {
     private TwitterDataRetriever twitterDataRetriever = new TwitterDataRetriever();
 
     private Thread thread;
+    private boolean isRuning=false;
 
     public OnLineFollowersListKeeper() {
         thread=new Thread(this);
@@ -33,21 +34,23 @@ public class OnLineFollowersListKeeper implements Runnable {
 
     public void run() {
         synchronized (lock){
-            try {
+
                 while (true) {
+                    try {
+                    isRuning=true;
                     getOnlineFollowersList();
+                    isRuning=false;
                     Thread.sleep(FIVE_MINUTES);
+                } catch (InterruptedException ie) {
+                    Log.e("evtw", "exception", ie);
                 }
-            } catch (InterruptedException ie) {
-                Log.e("evtw", "exception", ie);
-            }
+                }
         }
     }
 
     public void forceRefresh(){
-        thread.interrupt();
-        thread=new Thread(this);
-        thread.start();
+        if(thread!=null)
+            thread.interrupt();
     }
 
     private void getOnlineFollowersList() {
@@ -80,10 +83,11 @@ public class OnLineFollowersListKeeper implements Runnable {
                         String screen_name = jsonObject.getString("screen_name");
 
                         String bi= jsonObject.getString("profile_background_image_url_https");
-                        String profile_background_image_url = bi==null?ConstantValues.DEFAULT_BACKGROUND_IMAGE_URL:bi;
+
+                        String profile_background_image_url = (bi=="null"?ConstantValues.DEFAULT_BACKGROUND_IMAGE_URL:bi);
 
                         String pi= jsonObject.getString("profile_image_url_https");
-                        String profile_image_url = pi==null?ConstantValues.DEFAULT_PROFILE_IMAGE_URL:pi;
+                        String profile_image_url = (pi=="null"?ConstantValues.DEFAULT_PROFILE_IMAGE_URL:pi);
 
                         String description = jsonObject.getString("description");
                         ArrayList<String> tweets = getTweets(id);

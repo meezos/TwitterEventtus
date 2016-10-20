@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">TwitterEventtus</string>
     <string name="menu_settings">Settings</string>
-    <string name="sorry_message">sorry we are still trying to find your followers that are now online</string>
+    <string name="sorry_message">sorry we are still trying to find your followers that are now logged in</string>
+    <string name="not_logged_in_message">sorry you are not logged in</string>
+
+    <string name="locale_lang">Current Locale</string>
+
 </resources>

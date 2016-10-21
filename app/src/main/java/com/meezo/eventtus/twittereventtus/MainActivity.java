@@ -35,6 +35,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.Locale;
 import java.util.Random;
 
 import javax.crypto.Mac;
@@ -49,8 +50,8 @@ public class MainActivity extends Activity {
     private static final String TWITTER_KEY = "jv6MWI8UtPKWCXh5j1Vu5bY0l";
     private static final String TWITTER_SECRET = "BUOoRuBEPhzhIug93R1ud9Iji2Myy7EB3m6FFAwKOP3CaAhZ9O";
     private TwitterLoginButton loginButton;
-
     static LinkedList<String> usersOfThisAppOnThisPhone=new LinkedList<String>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +60,19 @@ public class MainActivity extends Activity {
         Fabric.with(this, new Twitter(authConfig));
         LinkedHashSet<User> a=new LinkedHashSet<User>();
 
+
         if(Twitter.getSessionManager().getActiveSession()!=null){
+
+            Log.d("evtw","number of user in list "+usersOfThisAppOnThisPhone.size());
+            Log.d("evtw","number of user in list "+usersOfThisAppOnThisPhone.size());
+            Log.d("evtw","number of user in list "+usersOfThisAppOnThisPhone.size());
+            Log.d("evtw","number of user in list "+usersOfThisAppOnThisPhone.size());
+            Log.d("evtw","number of user in list "+usersOfThisAppOnThisPhone.size());
+            Log.d("evtw","number of user in list "+usersOfThisAppOnThisPhone.size());
+
+            if(!usersOfThisAppOnThisPhone.remove(Twitter.getSessionManager().getActiveSession().getUserName()));
+            usersOfThisAppOnThisPhone.add(Twitter.getSessionManager().getActiveSession().getUserName());
+
             launchListActivity();
             this.finish();
             return;
@@ -78,6 +91,7 @@ public class MainActivity extends Activity {
                     usersOfThisAppOnThisPhone.remove(result.data.getUserName());
                 }
                 usersOfThisAppOnThisPhone. add(0, result.data.getUserName());
+                Log.d("evtw","size size size "+usersOfThisAppOnThisPhone.size());
 
                 launchListActivity();
                 MainActivity.this.finish();

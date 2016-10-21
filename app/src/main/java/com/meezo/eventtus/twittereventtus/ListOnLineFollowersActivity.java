@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -30,6 +31,7 @@ import com.twitter.sdk.android.core.TwitterSession;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -48,7 +50,7 @@ public class ListOnLineFollowersActivity extends Activity {
     ImageButton refresh;
     ImageButton englishArabic;
     ImageButton showUsers;
-    Spinner menu;
+    ListView menu;
     static private boolean isEnglish = true;
     static private boolean isMenuShowing = false;
     static private boolean isSideShowing = false;
@@ -62,6 +64,8 @@ public class ListOnLineFollowersActivity extends Activity {
     static private ArrayList<User> users = new ArrayList<User>();
     static private boolean didRequestNewUser = false;
 
+    static boolean isShowUsersFirstPressed=true;
+    static boolean firstClick=true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -80,7 +84,7 @@ public class ListOnLineFollowersActivity extends Activity {
                 .findViewById(R.id.english_arabic);
 
         String currentLanguage=((MyApplication)getApplicationContext()).getLang();
-        if(currentLanguage=="english"||currentLanguage==""){
+        if(currentLanguage.equals("english")||currentLanguage.endsWith("")){
             isEnglish=true;
             englishArabic
                     .setImageResource(R.drawable.english_selected);
@@ -94,11 +98,10 @@ public class ListOnLineFollowersActivity extends Activity {
         showUsers = (ImageButton) this
                 .findViewById(R.id.users);
 
-        menu = (Spinner)this.findViewById(R.id.menu);
-
-        initFollowersList();
+        menu = (ListView)this.findViewById(R.id.menu);
 
         setUpButtons();
+        initFollowersList();
     }
 
     @Override
@@ -124,7 +127,7 @@ public class ListOnLineFollowersActivity extends Activity {
            hideMenu();
         }
         else
-            this.finish();
+            super.onBackPressed();
     }
 
     public static void refreshListView(Collection collection) {
@@ -238,33 +241,72 @@ public class ListOnLineFollowersActivity extends Activity {
                     isMenuShowing = true;
                     showUsers
                             .setImageResource(R.drawable.btn_users_focused);
+                       ArrayList<String> values=  new ArrayList<String>(MainActivity.usersOfThisAppOnThisPhone);
 
-                    ArrayList<String> menuItems=  new ArrayList<String>(MainActivity.usersOfThisAppOnThisPhone);
 
+                   /* String[] values = new String[] { "Android List View",
+                            "Adapter implementation",
+                            "Simple List View In Android",
+                            "Create List View Android",
+                            "Android Example",
+                            "List View Source Code",
+                            "List View Array Adapter",
+                            "Android Example List View"
+                    };
+*/
+                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(ListOnLineFollowersActivity.this,
+                            android.R.layout.simple_list_item_1, android.R.id.text1, values);
+
+
+                    // Assign adapter to ListView
+                    menu.setAdapter(adapter);
+
+
+                    //   ArrayList<String> menuItems=  new ArrayList<String>(MainActivity.usersOfThisAppOnThisPhone);
+
+                   // ArrayAdapter<String> adp = new ArrayAdapter<String> (ListOnLineFollowersActivity.this,android.R.layout.simple_spinner_dropdown_item,menuItems);
+//menu.setAdapter(adp);
                     menu.setVisibility(View.VISIBLE);
-
-                    ArrayAdapter<String> adp = new ArrayAdapter<String> (ListOnLineFollowersActivity.this,android.R.layout.simple_spinner_dropdown_item,menuItems);
-
+                    firstClick=true;
                     menu.performClick();
                 }
 
                 else {
+                    Log.d("evtw","close ");
                     isMenuShowing = false;
                     showUsers
                             .setImageResource(R.drawable.btn_users);
-
+   // if(menu.)
                     menu.setVisibility(View.GONE);
                 }
             }
         });
 
-        menu.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+
+
+        menu.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
-            public void onItemSelected(AdapterView<?> parent, View view,
-                                       int position, long arg3)
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id)
             {
-                menu.setVisibility(View.GONE);
+                Log.d("evtw","menu item selected "+position);
+                Log.d("evtw","menu item selected "+position);
+                Log.d("evtw","menu item selected "+position);
+                Log.d("evtw","menu item selected "+position);
+                Log.d("evtw","menu item selected "+position);
+                Log.d("evtw","menu item selected "+position);
+                Log.d("evtw","menu item selected "+position);
+                Log.d("evtw","menu item selected "+position);
+                Log.d("evtw","menu item selected "+position);
+                Log.d("evtw","menu item selected "+position);
+                Log.d("evtw","menu item selected "+position);
+
+                isMenuShowing = false;
                 showUsers
+                        .setImageResource(R.drawable.btn_users);
+                // if(menu.)
+                menu.setVisibility(View.GONE);
+/*                showUsers
                         .setImageResource(R.drawable.btn_users);
                 String userSelected=MainActivity.usersOfThisAppOnThisPhone.get(position);
 
@@ -281,11 +323,19 @@ public class ListOnLineFollowersActivity extends Activity {
                         toast.show();
                     }
                     MainActivity.usersOfThisAppOnThisPhone.remove(position);
-                }
+                }*/
             }
 
             public void onNothingSelected(AdapterView<?> arg0)
             {
+                Log.d("evtw","onNothingSelectedcted ");
+                Log.d("evtw","onNothingSelectedcted ");
+                Log.d("evtw","onNothingSelectedcted ");
+                Log.d("evtw","onNothingSelectedcted ");
+                Log.d("evtw","onNothingSelectedcted ");
+                Log.d("evtw","onNothingSelectedcted ");
+                Log.d("evtw","onNothingSelectedcted ");
+                Log.d("evtw","onNothingSelectedcted ");
 
             }
         });
@@ -361,7 +411,7 @@ public class ListOnLineFollowersActivity extends Activity {
 
             fullName.setText(fn);
             screenName.setText("@" + sn);
-            description.setText(users.get(position).getDescription());
+            description.setText(d);
             profileImage.setImageBitmap(pi);
 
             return vi;

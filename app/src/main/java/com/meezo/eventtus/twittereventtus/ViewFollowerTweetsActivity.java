@@ -49,7 +49,7 @@ public class ViewFollowerTweetsActivity extends Activity {
 
     @Override
     public void onPause() {
-        super.onResume();
+        super.onPause();
     }
 
     @Override

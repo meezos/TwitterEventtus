@@ -149,20 +149,20 @@ public class User implements Serializable {
         return didSaveProfileImageToDisk;
     }
 
-    public void getAndSaveBackgroundImage(){
-        getAndSaveImage(backgroundImageUrl,id,ImageType.BACKGROUND);
-    }
-
-    public void getAndSaveProfileImage(){
-        getAndSaveImage(backgroundImageUrl,id,ImageType.PROFILE);
-    }
-
     public  void setBackgroundImageDirectory(String path){
         backgroundImageDirectory=new File(path);
     }
 
     public  void setProfileImageDirectory(String path){
         profileImageDirectory=new File(path);
+    }
+
+    public void getAndSaveBackgroundImage(){
+        getAndSaveImage(backgroundImageUrl,id,ImageType.BACKGROUND);
+    }
+
+    public void getAndSaveProfileImage(){
+        getAndSaveImage(backgroundImageUrl,id,ImageType.PROFILE);
     }
 
     private void getAndSaveImage(String url, String id, ImageType imageType) {

@@ -33,7 +33,7 @@ import java.util.Collection;
 public class ListOnLineFollowersActivity extends Activity {
 
     static private Handler handler = new Handler();
-
+    static private Object lock = new Object();
     private static OnLineFollowersListKeeper onLineFollowersListKeeper;
     ListView followersListDisplay;
     Button invisibleSide;
@@ -57,12 +57,10 @@ public class ListOnLineFollowersActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        followers =new ArrayList<>();
         if(onLineFollowersListKeeper==null)
             onLineFollowersListKeeper=new OnLineFollowersListKeeper();
         else
             onLineFollowersListKeeper.forceRefresh();
-
 
         setContentView(R.layout.activity_list_all_online_followers);
 
@@ -123,7 +121,7 @@ public class ListOnLineFollowersActivity extends Activity {
     }
 
     public static void refreshListView(Collection<User> collection) {
-        synchronized (followers) {
+        synchronized (lock) {
 
             followers = new ArrayList<>(collection);
         }
@@ -152,7 +150,7 @@ public class ListOnLineFollowersActivity extends Activity {
 
                 while (!didRequestNewUser) {
 
-                    synchronized (followers) {
+                    synchronized (lock) {
                         if (followers.isEmpty()) handler.post(new Runnable() {
 
                             @Override
@@ -279,7 +277,18 @@ public class ListOnLineFollowersActivity extends Activity {
 
 
                 else if(TwitterMediator.switchUser(userSelected)){
-                    MainActivity.getUsersOfThisAppOnThisDevice().add(0,userSelected);
+                    MainActivity.getUsersOfThisAppOnThisDevice().add(0,userSelected); synchronized (lock) {
+
+                        followers = new ArrayList<>();
+                    }
+                    handler.post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            adapter.notifyDataSetChanged();
+                        }
+                    });
+
                     onLineFollowersListKeeper.forceRefresh();
                 }
                 else{
@@ -296,6 +305,9 @@ public class ListOnLineFollowersActivity extends Activity {
         Intent myIntent = new Intent();
         myIntent.setClass(getApplication(), MainActivity.class);
         startActivity(myIntent);
+        synchronized (followers) {
+            followers =new ArrayList<>();
+        }
         this.finish();
     }
 
@@ -304,7 +316,7 @@ public class ListOnLineFollowersActivity extends Activity {
                                 long id) {
 
             User user;
-            synchronized (followers) {
+            synchronized (lock) {
                 user = followers.get(position);
             }
 
@@ -355,7 +367,7 @@ public class ListOnLineFollowersActivity extends Activity {
             String d ;
             Bitmap pi;
 
-            synchronized (followers) {
+            synchronized (lock) {
                 User user = followers.get(position);
                 sn = user.getScreenName();
                 fn = user.getName();

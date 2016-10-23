@@ -1,7 +1,6 @@
 package com.meezo.eventtus.twittereventtus;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -10,7 +9,6 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -21,30 +19,23 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.twitter.sdk.android.Twitter;
-import com.twitter.sdk.android.core.Session;
-import com.twitter.sdk.android.core.TwitterSession;
-
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Set;
 
-/**
- * Created by mazenmahmoudarakji on 10/17/16.
+/*
+ * Created by mazenmahmoudarakji on 10/17/16.  Babbage.
  */
 
+@SuppressWarnings("FieldCanBeLocal")
 public class ListOnLineFollowersActivity extends Activity {
 
     static private Handler handler = new Handler();
 
     private static OnLineFollowersListKeeper onLineFollowersListKeeper;
-
+    ListView followersListDisplay;
     Button invisibleSide;
     LinearLayout sideButtonsLayout;
     ImageButton refresh;
@@ -55,24 +46,23 @@ public class ListOnLineFollowersActivity extends Activity {
     static private boolean isMenuShowing = false;
     static private boolean isSideShowing = false;
 
-    private ListView usersList;
-    private TextView fullName;
-    private TextView screenName;
-    private TextView description;
-
     static private LazyAdapter adapter;
-    static private ArrayList<User> users = new ArrayList<User>();
+    static private ArrayList<User> followers = new ArrayList<>();
     static private boolean didRequestNewUser = false;
 
-    static boolean isShowUsersFirstPressed=true;
     static boolean firstClick=true;
+    static boolean isActivityInForeground=true;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        followers =new ArrayList<>();
         if(onLineFollowersListKeeper==null)
             onLineFollowersListKeeper=new OnLineFollowersListKeeper();
+        else
+            onLineFollowersListKeeper.forceRefresh();
+
 
         setContentView(R.layout.activity_list_all_online_followers);
 
@@ -107,11 +97,13 @@ public class ListOnLineFollowersActivity extends Activity {
     @Override
     public void onResume() {
         super.onResume();
+        isActivityInForeground=true;
     }
 
     @Override
     public void onPause() {
-        super.onResume();
+        super.onPause();
+        isActivityInForeground=false;
     }
 
     @Override
@@ -130,9 +122,10 @@ public class ListOnLineFollowersActivity extends Activity {
             super.onBackPressed();
     }
 
-    public static void refreshListView(Collection collection) {
-        synchronized (users) {
-            users = new ArrayList<User>(collection);
+    public static void refreshListView(Collection<User> collection) {
+        synchronized (followers) {
+
+            followers = new ArrayList<>(collection);
         }
         handler.post(new Runnable() {
 
@@ -141,7 +134,6 @@ public class ListOnLineFollowersActivity extends Activity {
                 adapter.notifyDataSetChanged();
             }
         });
-
     }
 
     private void hideMenu(){
@@ -160,22 +152,20 @@ public class ListOnLineFollowersActivity extends Activity {
 
                 while (!didRequestNewUser) {
 
-                    synchronized (users) {
-                        if (users.isEmpty()) {
-                            handler.post(new Runnable() {
+                    synchronized (followers) {
+                        if (followers.isEmpty()) handler.post(new Runnable() {
 
-                                @Override
-                                public void run() {
-                                    Toast toast = Toast.makeText(getApplicationContext(), R.string.sorry_message, Toast.LENGTH_LONG);
+                            @Override
+                            public void run() {
+                                Toast toast = Toast.makeText(getApplicationContext(), R.string.sorry_message, Toast.LENGTH_LONG);
+                                if(isActivityInForeground)
                                     toast.show();
-                                    ;
-                                }
-                            });
-                        }
+                            }
+                        });
                         else break;
                     }
                     try {
-                        Thread.sleep(10000);
+                        Thread.sleep(15000);
                     } catch (InterruptedException ie) {
                         Log.e("evtw", "exception", ie);
                     }
@@ -184,12 +174,12 @@ public class ListOnLineFollowersActivity extends Activity {
         };
         thread.start();
 
-        usersList = (ListView) findViewById(R.id.list);
+        followersListDisplay = (ListView) findViewById(R.id.list);
 
-        usersList.setOnItemClickListener(musicgridlistener);
+        followersListDisplay.setOnItemClickListener(followeListlistener);
 
         adapter = new LazyAdapter(this);
-        usersList.setAdapter(adapter);
+        followersListDisplay.setAdapter(adapter);
     }
 
     private void setUpButtons(){
@@ -241,31 +231,19 @@ public class ListOnLineFollowersActivity extends Activity {
                     isMenuShowing = true;
                     showUsers
                             .setImageResource(R.drawable.btn_users_focused);
-                       ArrayList<String> values=  new ArrayList<String>(MainActivity.usersOfThisAppOnThisPhone);
+                    ArrayList<String> displayList=  new ArrayList<>(MainActivity.getUsersOfThisAppOnThisDevice());
 
+                    String loggedInUser=displayList.get(0);
+                    String logOut = getString(R.string.log_out);
+                    String loggedInUserWithOptionToLogOut=loggedInUser+"\n("+logOut+")";
+                    displayList.remove(0);
+                    displayList.add(0,loggedInUserWithOptionToLogOut);
 
-                   /* String[] values = new String[] { "Android List View",
-                            "Adapter implementation",
-                            "Simple List View In Android",
-                            "Create List View Android",
-                            "Android Example",
-                            "List View Source Code",
-                            "List View Array Adapter",
-                            "Android Example List View"
-                    };
-*/
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(ListOnLineFollowersActivity.this,
-                            android.R.layout.simple_list_item_1, android.R.id.text1, values);
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(ListOnLineFollowersActivity.this,
+                            android.R.layout.simple_list_item_1, android.R.id.text1, displayList);
 
+                     menu.setAdapter(adapter);
 
-                    // Assign adapter to ListView
-                    menu.setAdapter(adapter);
-
-
-                    //   ArrayList<String> menuItems=  new ArrayList<String>(MainActivity.usersOfThisAppOnThisPhone);
-
-                   // ArrayAdapter<String> adp = new ArrayAdapter<String> (ListOnLineFollowersActivity.this,android.R.layout.simple_spinner_dropdown_item,menuItems);
-//menu.setAdapter(adp);
                     menu.setVisibility(View.VISIBLE);
                     firstClick=true;
                     menu.performClick();
@@ -276,82 +254,58 @@ public class ListOnLineFollowersActivity extends Activity {
                     isMenuShowing = false;
                     showUsers
                             .setImageResource(R.drawable.btn_users);
-   // if(menu.)
+
                     menu.setVisibility(View.GONE);
                 }
             }
         });
-
-
 
         menu.setOnItemClickListener(new AdapterView.OnItemClickListener()
         {
             public void onItemClick(AdapterView<?> parent, View view,
                                     int position, long id)
             {
-                Log.d("evtw","menu item selected "+position);
-                Log.d("evtw","menu item selected "+position);
-                Log.d("evtw","menu item selected "+position);
-                Log.d("evtw","menu item selected "+position);
-                Log.d("evtw","menu item selected "+position);
-                Log.d("evtw","menu item selected "+position);
-                Log.d("evtw","menu item selected "+position);
-                Log.d("evtw","menu item selected "+position);
-                Log.d("evtw","menu item selected "+position);
-                Log.d("evtw","menu item selected "+position);
-                Log.d("evtw","menu item selected "+position);
-
                 isMenuShowing = false;
                 showUsers
                         .setImageResource(R.drawable.btn_users);
-                // if(menu.)
+
                 menu.setVisibility(View.GONE);
-/*                showUsers
-                        .setImageResource(R.drawable.btn_users);
-                String userSelected=MainActivity.usersOfThisAppOnThisPhone.get(position);
 
-                Map m = Twitter.getSessionManager().getSessionMap();
-                Collection<TwitterSession> c = m.values();
+                String userSelected=MainActivity.getUsersOfThisAppOnThisDevice().get(position);
 
-                for(TwitterSession s:c){
-                    if(s.getUserName().equals(userSelected)){
-                        Twitter.getSessionManager().setActiveSession(s);
-                        MainActivity.usersOfThisAppOnThisPhone.add(0,userSelected);
-                    }
-                    else{
-                        Toast toast = Toast.makeText(getApplicationContext(), R.string.not_logged_in_message, Toast.LENGTH_LONG);
-                        toast.show();
-                    }
-                    MainActivity.usersOfThisAppOnThisPhone.remove(position);
-                }*/
-            }
+                MainActivity.getUsersOfThisAppOnThisDevice().remove(userSelected);
+                if(position==0)
+                    ListOnLineFollowersActivity.this.logOut();
 
-            public void onNothingSelected(AdapterView<?> arg0)
-            {
-                Log.d("evtw","onNothingSelectedcted ");
-                Log.d("evtw","onNothingSelectedcted ");
-                Log.d("evtw","onNothingSelectedcted ");
-                Log.d("evtw","onNothingSelectedcted ");
-                Log.d("evtw","onNothingSelectedcted ");
-                Log.d("evtw","onNothingSelectedcted ");
-                Log.d("evtw","onNothingSelectedcted ");
-                Log.d("evtw","onNothingSelectedcted ");
 
+                else if(TwitterMediator.switchUser(userSelected)){
+                    MainActivity.getUsersOfThisAppOnThisDevice().add(0,userSelected);
+                    onLineFollowersListKeeper.forceRefresh();
+                }
+                else{
+                    Toast toast = Toast.makeText(getApplicationContext(), R.string.not_logged_in_message, Toast.LENGTH_LONG);
+                    toast.show();
+                }
             }
         });
     }
 
+    private void logOut(){
 
+        TwitterMediator.logOut(getApplicationContext());
+        Intent myIntent = new Intent();
+        myIntent.setClass(getApplication(), MainActivity.class);
+        startActivity(myIntent);
+        this.finish();
+    }
 
-    private AdapterView.OnItemClickListener musicgridlistener = new AdapterView.OnItemClickListener() {
+    private AdapterView.OnItemClickListener followeListlistener = new AdapterView.OnItemClickListener() {
         public void onItemClick(AdapterView parent, View v, int position,
                                 long id) {
 
-            final Application app = ListOnLineFollowersActivity.this.getApplication();
-
             User user;
-            synchronized (users) {
-                user = users.get(position);
+            synchronized (followers) {
+                user = followers.get(position);
             }
 
             Intent i = new Intent(ListOnLineFollowersActivity.this, ViewFollowerTweetsActivity.class);
@@ -365,14 +319,14 @@ public class ListOnLineFollowersActivity extends Activity {
         private Activity activity;
         private LayoutInflater inflater = null;
 
-        public LazyAdapter(Activity a) {
+        LazyAdapter(Activity a) {
             activity = a;
             inflater = (LayoutInflater) activity
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 
         public int getCount() {
-            return users.size();
+            return followers.size();
         }
 
         public Object getItem(int position) {
@@ -385,9 +339,9 @@ public class ListOnLineFollowersActivity extends Activity {
 
         public View getView(int position, View convertView, ViewGroup parent) {
             View vi = convertView;
-            String id = null;
+
             if (convertView == null)
-                vi = inflater.inflate(R.layout.list_row, null);
+                vi = inflater.inflate(R.layout.list_row,parent,false);
 
             TextView fullName = (TextView) vi.findViewById(R.id.full_name);
             TextView screenName = (TextView) vi.findViewById(R.id.screen_name);
@@ -396,13 +350,13 @@ public class ListOnLineFollowersActivity extends Activity {
             ImageView profileImage = (ImageView) vi
                     .findViewById(R.id.profile_image);
 
-            String sn = null;
-            String fn = null;
-            String d = null;
-            Bitmap pi = null;
+            String sn;
+            String fn;
+            String d ;
+            Bitmap pi;
 
-            synchronized (users) {
-                User user = users.get(position);
+            synchronized (followers) {
+                User user = followers.get(position);
                 sn = user.getScreenName();
                 fn = user.getName();
                 d = user.getDescription();
@@ -410,7 +364,8 @@ public class ListOnLineFollowersActivity extends Activity {
             }
 
             fullName.setText(fn);
-            screenName.setText("@" + sn);
+            String displayScreenName="@"+sn;
+            screenName.setText(displayScreenName);
             description.setText(d);
             profileImage.setImageBitmap(pi);
 

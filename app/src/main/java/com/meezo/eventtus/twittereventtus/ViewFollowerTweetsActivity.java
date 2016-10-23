@@ -3,16 +3,16 @@ package com.meezo.eventtus.twittereventtus;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
 
-/**
+/*
  * Created by mazenmahmoudarakji on 10/19/16.
  */
 
+@SuppressWarnings("FieldCanBeLocal")
 public class ViewFollowerTweetsActivity extends Activity {
 
     private ImageView banner;
@@ -22,14 +22,13 @@ public class ViewFollowerTweetsActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-
         Intent i = getIntent();
         User user = (User)i.getSerializableExtra("user");
 
         setContentView(R.layout.activity_view_follower_tweets);
 
-        ImageView banner = (ImageView) findViewById(R.id.banner);
-        TextView tweets= (TextView) findViewById(R.id.tweets);
+        banner = (ImageView) findViewById(R.id.banner);
+        tweets= (TextView) findViewById(R.id.tweets);
 
         banner.setImageBitmap(user.getBackgroundImage());
 

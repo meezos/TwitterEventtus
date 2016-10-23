@@ -2,45 +2,39 @@ package com.meezo.eventtus.twittereventtus;
 
 import android.util.Log;
 
-import com.twitter.sdk.android.Twitter;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 
-/**
+/*
  * Created by mazenmahmoudarakji on 10/17/16.
  */
 
+@SuppressWarnings("FieldCanBeLocal")
+class OnLineFollowersListKeeper implements Runnable {
 
-public class OnLineFollowersListKeeper implements Runnable {
-
-    private static Object lock = new Object();
-    private LinkedHashSet<User> onLineFollowers = new LinkedHashSet<User>();
+    private static final Object lock = new Object();
+    private LinkedHashSet<User> onLineFollowers = new LinkedHashSet<>();
     private final int FIVE_MINUTES = 300000;
     private TwitterDataRetriever twitterDataRetriever = new TwitterDataRetriever();
 
     private Thread thread;
-    private boolean isRuning=false;
 
-    public OnLineFollowersListKeeper() {
+    OnLineFollowersListKeeper() {
         thread=new Thread(this);
         thread.start();
     }
 
-
     public void run() {
         synchronized (lock){
-
                 while (true) {
                     try {
-                    isRuning=true;
-                    getOnlineFollowersList();
-                    isRuning=false;
-                    Thread.sleep(FIVE_MINUTES);
+                        getOnlineFollowersList();
+                        Thread.sleep(FIVE_MINUTES);
                 } catch (InterruptedException ie) {
                     Log.e("evtw", "exception", ie);
                 }
@@ -48,14 +42,14 @@ public class OnLineFollowersListKeeper implements Runnable {
         }
     }
 
-    public void forceRefresh(){
+    void forceRefresh(){
         if(thread!=null)
             thread.interrupt();
     }
 
     private void getOnlineFollowersList() {
 
-        ArrayList<String> allFollowersAsJsonPages = twitterDataRetriever.getFollowersList(Twitter.getSessionManager().getActiveSession().getUserName());
+        ArrayList<String> allFollowersAsJsonPages = twitterDataRetriever.getFollowersList(TwitterMediator.getUserName());
 
         if (allFollowersAsJsonPages == null)
             return;
@@ -66,16 +60,16 @@ public class OnLineFollowersListKeeper implements Runnable {
                 JSONObject jsonRootObject = new JSONObject(userJson);
                 JSONArray jsonArray = jsonRootObject.optJSONArray("users");
 
+                HashSet<User> crossCheck=new HashSet<>();
                 for (int i = 0; i < jsonArray.length(); i++) {
 
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
-
                     String id = jsonObject.getString("id_str");
+                    crossCheck.add(new User(id));
 
-                    /// THIS SHOULD HAVE WORKED
-                    if (false/*Twitter.getSessionManager().getSession(id)==null*/) {
+                    if(!TwitterMediator.isUserLoggedIn(id)){
                         onLineFollowers.remove(new User(id));
-                        continue;
+                           continue;
                     }
 
                     if (!onLineFollowers.contains(new User(id))) {
@@ -84,10 +78,10 @@ public class OnLineFollowersListKeeper implements Runnable {
 
                         String bi= jsonObject.getString("profile_background_image_url_https");
 
-                        String profile_background_image_url = (bi=="null"?ConstantValues.DEFAULT_BACKGROUND_IMAGE_URL:bi);
+                        String profile_background_image_url = (bi.equals("null")?ConstantValues.DEFAULT_BACKGROUND_IMAGE_URL:bi);
 
                         String pi= jsonObject.getString("profile_image_url_https");
-                        String profile_image_url = (pi=="null"?ConstantValues.DEFAULT_PROFILE_IMAGE_URL:pi);
+                        String profile_image_url = (pi.equals("null")?ConstantValues.DEFAULT_PROFILE_IMAGE_URL:pi);
 
                         String description = jsonObject.getString("description");
                         ArrayList<String> tweets = getTweets(id);
@@ -97,6 +91,11 @@ public class OnLineFollowersListKeeper implements Runnable {
                         updatedList = true;
                     }
                 }
+                for(User u: onLineFollowers)
+                    if(!crossCheck.contains(u)) {
+                        onLineFollowers.remove(u);
+                        updatedList=true;
+                    }
             } catch (JSONException e) {
                 Log.e("evtw", "exception", e);
                 e.printStackTrace();
@@ -107,7 +106,7 @@ public class OnLineFollowersListKeeper implements Runnable {
     }
 
     private ArrayList<String> getTweets(String id) {
-        ArrayList<String> tweetsList = new ArrayList<String>();
+        ArrayList<String> tweetsList = new ArrayList<>();
         String jsonData = twitterDataRetriever.getMostRecentTweets(id, 10);
 
         try {

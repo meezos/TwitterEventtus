@@ -19,6 +19,7 @@ import java.util.ArrayList;
  * Created by mazenmahmoudarakji on 10/15/16.
  */
 
+@SuppressWarnings("ALL")
 public class User implements Serializable {
 
     final static File backgroundImageDirectory =new File(ConstantValues.FILES_DIRECTORY_PATH + File.separator + "backgrounds");
@@ -29,7 +30,7 @@ public class User implements Serializable {
         profileImageDirectory.mkdirs();
     }
 
-    enum ImageType {
+    private enum ImageType {
         BACKGROUND(backgroundImageDirectory),
 
         PROFILE(profileImageDirectory);

@@ -34,7 +34,12 @@ android {
     }
     productFlavors {
     }
+
+    lintOptions {
+        disable 'Default','TypographyFractions','TypographyQuotes'
+    }
 }
+
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')

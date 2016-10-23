@@ -7,10 +7,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
@@ -206,11 +208,16 @@ public class TwitterDataRetriever {
                 line = line + '\n';
                 sb.append(line);
             }
-        } catch (Exception e) {
-            Log.d("evtw", " get webpage EXCEPTION!!  " + e.getMessage());
-            Log.e("evtw", "exception", e);
-            e.printStackTrace();
-        } finally {
+        }
+        catch (MalformedURLException mue) {
+            mue.printStackTrace();
+            Log.d("evtw", " get webpage EXCEPTION!!  " + mue.getMessage());
+            Log.e("evtw", "exception", mue);
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            Log.d("evtw", " get webpage EXCEPTION!!  " + ioe.getMessage());
+            Log.e("evtw", "exception", ioe);
+        }  finally {
             if (connection != null)
                 connection.disconnect();
         }

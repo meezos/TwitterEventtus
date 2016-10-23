@@ -22,8 +22,8 @@ import java.util.ArrayList;
 @SuppressWarnings("ALL")
 public class User implements Serializable {
 
-    final static File backgroundImageDirectory =new File(ConstantValues.FILES_DIRECTORY_PATH + File.separator + "backgrounds");
-    final static File profileImageDirectory= new File(ConstantValues.FILES_DIRECTORY_PATH + File.separator + "profiles");
+    static File backgroundImageDirectory =new File(ConstantValues.FILES_DIRECTORY_PATH + File.separator + "backgrounds");
+    static File profileImageDirectory= new File(ConstantValues.FILES_DIRECTORY_PATH + File.separator + "profiles");
 
     static {
         backgroundImageDirectory.mkdirs();
@@ -54,19 +54,24 @@ public class User implements Serializable {
     private String description;
     private ArrayList<String> tweets;
 
+    private boolean didSaveProfileImageToDisk=false;
+    private boolean didSaveBackgroundImageToDisk=false;
+
 
     public User(String i) {
         id = i;
     }
 
-    public User(String i, String n, String s, String pbi, String pi, String d, ArrayList<String> t) {
+    public User(String i, String n, String s, String pbi, String pi, String d, ArrayList<String> t, boolean getImages) {
         this(i);
         name = n;
         screen_name = s;
         backgroundImageUrl = pbi;
-        getAndSaveImage(backgroundImageUrl, id, ImageType.BACKGROUND);
         profileImageUrl = pi;
-        getAndSaveImage(profileImageUrl, id, ImageType.PROFILE);
+        if(getImages) {
+            getAndSaveImage(backgroundImageUrl, id, ImageType.BACKGROUND);
+            getAndSaveImage(profileImageUrl, id, ImageType.PROFILE);
+        }
         description = d;
         tweets = t;
     }
@@ -136,6 +141,30 @@ public class User implements Serializable {
         return tweets;
     }
 
+    public boolean isDidSaveBackgroundImageToDisk() {
+        return didSaveBackgroundImageToDisk;
+    }
+
+    public boolean isDidSaveProfileImageToDisk() {
+        return didSaveProfileImageToDisk;
+    }
+
+    public void getAndSaveBackgroundImage(){
+        getAndSaveImage(backgroundImageUrl,id,ImageType.BACKGROUND);
+    }
+
+    public void getAndSaveProfileImage(){
+        getAndSaveImage(backgroundImageUrl,id,ImageType.PROFILE);
+    }
+
+    public  void setBackgroundImageDirectory(String path){
+        backgroundImageDirectory=new File(path);
+    }
+
+    public  void setProfileImageDirectory(String path){
+        profileImageDirectory=new File(path);
+    }
+
     private void getAndSaveImage(String url, String id, ImageType imageType) {
         try {
 
@@ -147,6 +176,11 @@ public class User implements Serializable {
 
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);
             Log.d("evtw", "saved one  " + url);
+
+            if(imageType==ImageType.BACKGROUND)
+                didSaveBackgroundImageToDisk=true;
+            else
+                didSaveProfileImageToDisk=true;
 
         } catch (MalformedURLException mue) {
             mue.printStackTrace();

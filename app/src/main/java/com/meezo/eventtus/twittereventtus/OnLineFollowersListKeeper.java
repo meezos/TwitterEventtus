@@ -85,7 +85,7 @@ class OnLineFollowersListKeeper implements Runnable {
 
                         String description = jsonObject.getString("description");
                         ArrayList<String> tweets = getTweets(id);
-                        User user = new User(id, name, screen_name, profile_background_image_url, profile_image_url, description, tweets);
+                        User user = new User(id, name, screen_name, profile_background_image_url, profile_image_url, description, tweets,true);
 
                         onLineFollowers.add(user);
                         updatedList = true;

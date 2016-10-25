@@ -25,25 +25,25 @@ class OnLineFollowersListKeeper implements Runnable {
     private Thread thread;
 
     OnLineFollowersListKeeper() {
-        thread=new Thread(this);
+        thread = new Thread(this);
         thread.start();
     }
 
     public void run() {
-        synchronized (lock){
-                while (true) {
-                    try {
-                        getOnlineFollowersList();
-                        Thread.sleep(FIVE_MINUTES);
+        synchronized (lock) {
+            while (true) {
+                try {
+                    getOnlineFollowersList();
+                    Thread.sleep(FIVE_MINUTES);
                 } catch (InterruptedException ie) {
                     Log.e("evtw", "exception", ie);
                 }
-                }
+            }
         }
     }
 
-    void forceRefresh(){
-        if(thread!=null)
+    void forceRefresh() {
+        if (thread != null)
             thread.interrupt();
     }
 
@@ -60,40 +60,40 @@ class OnLineFollowersListKeeper implements Runnable {
                 JSONObject jsonRootObject = new JSONObject(userJson);
                 JSONArray jsonArray = jsonRootObject.optJSONArray("users");
 
-                HashSet<User> crossCheck=new HashSet<>();
+                HashSet<User> crossCheck = new HashSet<>();
                 for (int i = 0; i < jsonArray.length(); i++) {
 
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
                     String screenName = jsonObject.getString("screen_name");
                     crossCheck.add(new User(screenName));
 
-                    if(!BackEnd.isUserLoggedIn(screenName)){
+                    if (!BackEndCommunicator.isUserLoggedIn(screenName)) {
                         onLineFollowers.remove(new User(screenName));
-                           continue;
+                        continue;
                     }
 
                     if (!onLineFollowers.contains(new User(screenName))) {
                         String name = jsonObject.getString("name");
 
-                        String bi= jsonObject.getString("profile_background_image_url_https");
+                        String bi = jsonObject.getString("profile_background_image_url_https");
 
-                        String profileBackgroundImageUrl = (bi.equals("null")?ConstantValues.DEFAULT_BACKGROUND_IMAGE_URL:bi);
+                        String profileBackgroundImageUrl = (bi.equals("null") ? ConstantValues.DEFAULT_BACKGROUND_IMAGE_URL : bi);
 
-                        String pi= jsonObject.getString("profile_image_url_https");
-                        String profileImageUrl = (pi.equals("null")?ConstantValues.DEFAULT_PROFILE_IMAGE_URL:pi);
+                        String pi = jsonObject.getString("profile_image_url_https");
+                        String profileImageUrl = (pi.equals("null") ? ConstantValues.DEFAULT_PROFILE_IMAGE_URL : pi);
 
                         String description = jsonObject.getString("description");
                         ArrayList<String> tweets = getTweets(screenName);
-                        User user = new User(screenName, name, profileBackgroundImageUrl, profileImageUrl, description, tweets,true);
+                        User user = new User(screenName, name, profileBackgroundImageUrl, profileImageUrl, description, tweets, true);
 
                         onLineFollowers.add(user);
                         updatedList = true;
                     }
                 }
-                for(User u: onLineFollowers)
-                    if(!crossCheck.contains(u)) {
+                for (User u : onLineFollowers)
+                    if (!crossCheck.contains(u)) {
                         onLineFollowers.remove(u);
-                        updatedList=true;
+                        updatedList = true;
                     }
             } catch (JSONException e) {
                 Log.e("evtw", "exception", e);

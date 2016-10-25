@@ -67,27 +67,20 @@ public class MainActivity extends Activity {
     }
 
     class LoginCallBack{
-        String userName;
+        String screenName;
         String errorMessage;
 
-        public void success(String userName){
-            this.userName=userName;
-            Toast toast=Toast.makeText(MainActivity.this.getApplicationContext(),userName,Toast.LENGTH_LONG);
+        public void success(String screenName){
+            this.screenName =screenName;
+            Toast toast=Toast.makeText(MainActivity.this.getApplicationContext(),screenName,Toast.LENGTH_LONG);
             toast.show();
 
-            if(usersOfThisAppOnThisDevice.contains(userName))
-                usersOfThisAppOnThisDevice.remove(userName);
+            if(usersOfThisAppOnThisDevice.contains(screenName))
+                usersOfThisAppOnThisDevice.remove(screenName);
 
-            usersOfThisAppOnThisDevice. add(0, userName);
-            final String userNameForLogin=userName;
+            usersOfThisAppOnThisDevice. add(0, screenName);
             Log.d("evtw","success success ");
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    BackEnd.logIn(userNameForLogin);
-                }
-            };
-            thread.start();
+            BackEndCommunicator.logIn(screenName);
 
             MainActivity.this.launchListActivity();
             MainActivity.this.finish();
@@ -99,8 +92,8 @@ public class MainActivity extends Activity {
         }
 
         @SuppressWarnings("unused")
-        String getUserName(){
-            return userName;
+        String getScreenName(){
+            return screenName;
         }
 
         @SuppressWarnings("unused")

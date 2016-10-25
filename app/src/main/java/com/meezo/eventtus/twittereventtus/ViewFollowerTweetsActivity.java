@@ -15,7 +15,7 @@ import java.util.ArrayList;
 @SuppressWarnings("FieldCanBeLocal")
 public class ViewFollowerTweetsActivity extends Activity {
 
-    private ImageView backgroundImage;
+    private ImageView banner;
     private TextView tweets;
 
     @Override
@@ -27,10 +27,10 @@ public class ViewFollowerTweetsActivity extends Activity {
 
         setContentView(R.layout.activity_view_follower_tweets);
 
-        backgroundImage = (ImageView) findViewById(R.id.banner);
+        banner = (ImageView) findViewById(R.id.banner);
         tweets= (TextView) findViewById(R.id.tweets);
 
-        backgroundImage.setImageBitmap(user.getBackgroundImage());
+        banner.setImageBitmap(user.getBackgroundImage());
 
         ArrayList<String>tweetsInList= user.getTweets();
 

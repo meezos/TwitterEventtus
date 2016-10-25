@@ -32,6 +32,7 @@ class BackEndCommunicator {
     }
 
     private static String sendToBackEnd(final String message,final boolean getReply) {
+        reply=null;
         final Semaphore blockForReply = new Semaphore(1, true);
         blockForReply.drainPermits();
 

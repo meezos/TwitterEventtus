@@ -67,7 +67,7 @@ class OnLineFollowersListKeeper implements Runnable {
                     String id = jsonObject.getString("id_str");
                     crossCheck.add(new User(id));
 
-                    if(!BackEnd.isUserLoggedIn(id)){
+                    if(!BackEnd.isUserLoggedIn(jsonObject.getString("screen_name"))){
                         onLineFollowers.remove(new User(id));
                            continue;
                     }

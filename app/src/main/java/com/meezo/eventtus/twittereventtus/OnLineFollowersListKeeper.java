@@ -64,28 +64,27 @@ class OnLineFollowersListKeeper implements Runnable {
                 for (int i = 0; i < jsonArray.length(); i++) {
 
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
-                    String id = jsonObject.getString("id_str");
-                    crossCheck.add(new User(id));
+                    String screenName = jsonObject.getString("screen_name");
+                    crossCheck.add(new User(screenName));
 
-                    if(!BackEnd.isUserLoggedIn(jsonObject.getString("screen_name"))){
-                        onLineFollowers.remove(new User(id));
+                    if(!BackEnd.isUserLoggedIn(screenName)){
+                        onLineFollowers.remove(new User(screenName));
                            continue;
                     }
 
-                    if (!onLineFollowers.contains(new User(id))) {
+                    if (!onLineFollowers.contains(new User(screenName))) {
                         String name = jsonObject.getString("name");
-                        String screen_name = jsonObject.getString("screen_name");
 
                         String bi= jsonObject.getString("profile_background_image_url_https");
 
-                        String profile_background_image_url = (bi.equals("null")?ConstantValues.DEFAULT_BACKGROUND_IMAGE_URL:bi);
+                        String profileBackgroundImageUrl = (bi.equals("null")?ConstantValues.DEFAULT_BACKGROUND_IMAGE_URL:bi);
 
                         String pi= jsonObject.getString("profile_image_url_https");
-                        String profile_image_url = (pi.equals("null")?ConstantValues.DEFAULT_PROFILE_IMAGE_URL:pi);
+                        String profileImageUrl = (pi.equals("null")?ConstantValues.DEFAULT_PROFILE_IMAGE_URL:pi);
 
                         String description = jsonObject.getString("description");
-                        ArrayList<String> tweets = getTweets(id);
-                        User user = new User(id, name, screen_name, profile_background_image_url, profile_image_url, description, tweets,true);
+                        ArrayList<String> tweets = getTweets(screenName);
+                        User user = new User(screenName, name, profileBackgroundImageUrl, profileImageUrl, description, tweets,true);
 
                         onLineFollowers.add(user);
                         updatedList = true;
@@ -105,9 +104,9 @@ class OnLineFollowersListKeeper implements Runnable {
             ListOnLineFollowersActivity.refreshListView(onLineFollowers);
     }
 
-    private ArrayList<String> getTweets(String id) {
+    private ArrayList<String> getTweets(String screenName) {
         ArrayList<String> tweetsList = new ArrayList<>();
-        String jsonData = twitterDataRetriever.getMostRecentTweets(id, 10);
+        String jsonData = twitterDataRetriever.getMostRecentTweets(screenName, 10);
 
         try {
             JSONArray jsonRootArray = new JSONArray(jsonData);

@@ -46,9 +46,8 @@ public class User implements Serializable {
         }
     }
 
-    private String id;
+    private String screenName;
     private String name;
-    private String screen_name;
     private String backgroundImageUrl;
     private String profileImageUrl;
     private String description;
@@ -58,19 +57,18 @@ public class User implements Serializable {
     private boolean didSaveBackgroundImageToDisk=false;
 
 
-    public User(String i) {
-        id = i;
+    public User(String sn) {
+        screenName = sn;
     }
 
-    public User(String i, String n, String s, String pbi, String pi, String d, ArrayList<String> t, boolean getImages) {
-        this(i);
+    public User(String s, String n, String pbi, String pi, String d, ArrayList<String> t, boolean getImages) {
+        this(s);
         name = n;
-        screen_name = s;
         backgroundImageUrl = pbi;
         profileImageUrl = pi;
         if(getImages) {
-            getAndSaveImage(backgroundImageUrl, id, ImageType.BACKGROUND);
-            getAndSaveImage(profileImageUrl, id, ImageType.PROFILE);
+            getAndSaveImage(backgroundImageUrl, screenName, ImageType.BACKGROUND);
+            getAndSaveImage(profileImageUrl, screenName, ImageType.PROFILE);
         }
         description = d;
         tweets = t;
@@ -78,13 +76,13 @@ public class User implements Serializable {
 
     @Override
     public String toString() {
-        String ret = name == null ? "" + id : name;
+        String ret = name == null ? screenName : name;
         return ret;
     }
 
     @Override
     public int hashCode() {
-        return id.hashCode();
+        return screenName.hashCode();
     }
 
     @Override
@@ -95,11 +93,7 @@ public class User implements Serializable {
             return true;
 
         User otherUser = (User) obj;
-        return otherUser.id.equals(this.id);
-    }
-
-    public String getId() {
-        return id;
+        return otherUser.screenName.equals(this.screenName);
     }
 
     public String getName() {
@@ -107,13 +101,13 @@ public class User implements Serializable {
     }
 
     public String getScreenName() {
-        return screen_name;
+        return screenName;
     }
 
     public Bitmap getProfileImage() {
         Bitmap bitmap = null;
         try {
-            File ff = new File(profileImageDirectory + File.separator + id + ".jpg");
+            File ff = new File(profileImageDirectory + File.separator + screenName + ".jpg");
             bitmap = BitmapFactory.decodeStream(new FileInputStream(ff));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -125,7 +119,7 @@ public class User implements Serializable {
     public Bitmap getBackgroundImage() {
         Bitmap bitmap = null;
         try {
-            File ff = new File(backgroundImageDirectory + File.separator + id + ".jpg");
+            File ff = new File(backgroundImageDirectory + File.separator + screenName + ".jpg");
             bitmap = BitmapFactory.decodeStream(new FileInputStream(ff));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -158,20 +152,20 @@ public class User implements Serializable {
     }
 
     public void getAndSaveBackgroundImage(){
-        getAndSaveImage(backgroundImageUrl,id,ImageType.BACKGROUND);
+        getAndSaveImage(backgroundImageUrl, screenName,ImageType.BACKGROUND);
     }
 
     public void getAndSaveProfileImage(){
-        getAndSaveImage(backgroundImageUrl,id,ImageType.PROFILE);
+        getAndSaveImage(backgroundImageUrl, screenName,ImageType.PROFILE);
     }
 
-    private void getAndSaveImage(String url, String id, ImageType imageType) {
+    private void getAndSaveImage(String url, String sn, ImageType imageType) {
         try {
 
             InputStream in = new URL(url).openStream();
             Bitmap bitmap = BitmapFactory.decodeStream(in);
 
-            File f = new File(imageType.getDir() + File.separator + id + ".jpg");
+            File f = new File(imageType.getDir() + File.separator + sn + ".jpg");
             FileOutputStream out = new FileOutputStream(f);
 
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out);

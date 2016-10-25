@@ -49,7 +49,7 @@ public class TwitterDataRetriever {
         }
     }
 
-    public ArrayList<String> getFollowersList(String userName) {
+    public ArrayList<String> getFollowersList(String screenName) {
         ArrayList<String> allJsonDataPages = new ArrayList<>();
 
         String baseUrl = ACTION_TO_BASE_URL_AND_HTTP_METHOD.get("FollowersList")[BASE_URL_INDEX];
@@ -58,7 +58,7 @@ public class TwitterDataRetriever {
         boolean done = false;
         KeyValuePair cursorKeyValue0 = new KeyValuePair("cursor", "-1");
         KeyValuePair cursorKeyValue1 = new KeyValuePair("count", "200");
-        KeyValuePair cursorKeyValue2 = new KeyValuePair("screen_name", userName);
+        KeyValuePair cursorKeyValue2 = new KeyValuePair("screen_name", screenName);
         while (!done) {
             try {
                 String jsonData = getJsonData(baseUrl, httpMethod, cursorKeyValue0, cursorKeyValue1, cursorKeyValue2);
@@ -81,12 +81,12 @@ public class TwitterDataRetriever {
         return allJsonDataPages;
     }
 
-    public String getMostRecentTweets(String userId, int numTweetsToGet) {
+    public String getMostRecentTweets(String screenName, int numTweetsToGet) {
 
         String baseUrl = ACTION_TO_BASE_URL_AND_HTTP_METHOD.get("RecentTweets")[BASE_URL_INDEX];
         String httpMethod = ACTION_TO_BASE_URL_AND_HTTP_METHOD.get("RecentTweets")[HTTP_METHOD_INDEX];
 
-        KeyValuePair cursorKeyValue = new KeyValuePair("user_id", userId);
+        KeyValuePair cursorKeyValue = new KeyValuePair("screen_name", screenName);
         KeyValuePair cursorKeyValue0 = new KeyValuePair("count", "" + numTweetsToGet);
 
 

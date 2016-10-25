@@ -61,4 +61,4 @@ The list it maintains is a list of the User class.
 
 Update:
 
-With respect to the issue noted in the ListOnLineFollowersActivity section, regarding functionality that was documented but not yet unimplemented, this issue has been clarified. See the reply from Twitter Staff in the provided link.  The answer, was that Twitter does not have this functionality.  And if one needs it, then it must be implemented using a custom backend.  The text in the javadocs has yet to be enriched to avoid confusion.  I have updated the project with a simple backend.
+With respect to the issue noted in the ListOnLineFollowersActivity section, regarding functionality that was documented but not yet unimplemented, this issue has been clarified. See the reply from Twitter Staff here https://twittercommunity.com/t/what-does-getsessionmap-do/76361/2 (I had to ask again but with a better looking question).  The answer, was that Twitter does not have this functionality.  And if one needs it, then it must be implemented using a custom backend.  The text in the javadocs has yet to be enriched to avoid confusion.  I have updated the project with a simple backend.

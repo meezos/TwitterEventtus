@@ -19,19 +19,20 @@ class BackEndCommunicator {
     private final static String IP_ADDRESS="10.10.10.16";
     private final static int PORT_NUMBER=6783;
 
-    private static String reply;
+    private String reply;
 
 
-    public static void logIn(String userName) { sendToBackEnd("login:" + userName + '\n',false); }
-    public static void logOut(String userName) {
+    public void logIn(String userName) { sendToBackEnd("login:" + userName + '\n',false); }
+    public void logOut(String userName) {
         sendToBackEnd("logout:" + userName + '\n',false);
     }
-    public static boolean isUserLoggedIn(String id) {
+    public boolean isUserLoggedIn(String id) {
         String status=sendToBackEnd("status:" + id + '\n',true);
         return status!=null&&status.equals("yes");
     }
 
-    private static String sendToBackEnd(final String message,final boolean getReply) {
+    private String sendToBackEnd(final String message,final boolean getReply) {
+
         reply=null;
         final Semaphore blockForReply = new Semaphore(1, true);
         blockForReply.drainPermits();

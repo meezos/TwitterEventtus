@@ -269,12 +269,11 @@ public class ListOnLineFollowersActivity extends Activity {
 
                 menu.setVisibility(View.GONE);
 
-                String userSelected=MainActivity.getUsersOfThisAppOnThisDevice().get(position);
+                final String userSelected=MainActivity.getUsersOfThisAppOnThisDevice().get(position);
 
                 MainActivity.getUsersOfThisAppOnThisDevice().remove(userSelected);
                 if(position==0)
                     ListOnLineFollowersActivity.this.logOut();
-
 
                 else if(TwitterMediator.switchUser(userSelected)){
                     MainActivity.getUsersOfThisAppOnThisDevice().add(0,userSelected); synchronized (lock) {
@@ -292,6 +291,13 @@ public class ListOnLineFollowersActivity extends Activity {
                     onLineFollowersListKeeper.forceRefresh();
                 }
                 else{
+                    Thread thread = new Thread() {
+                        @Override
+                        public void run() {
+                            BackEnd.logOut(userSelected);
+                        }
+                    };
+                    thread.start();
                     Toast toast = Toast.makeText(getApplicationContext(), R.string.not_logged_in_message, Toast.LENGTH_LONG);
                     toast.show();
                 }
@@ -300,6 +306,13 @@ public class ListOnLineFollowersActivity extends Activity {
     }
 
     private void logOut(){
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                BackEnd.logOut(TwitterMediator.getUserName());
+            }
+        };
+        thread.start();
 
         TwitterMediator.logOut(getApplicationContext());
         Intent myIntent = new Intent();

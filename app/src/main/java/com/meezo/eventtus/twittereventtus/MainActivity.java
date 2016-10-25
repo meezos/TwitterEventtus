@@ -25,6 +25,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         TwitterAuthConfig authConfig = new TwitterAuthConfig(ConstantValues.TWITTER_CONSUMER_KEY, ConstantValues.TWITTER_CONSUMER_SECRET);
         Fabric.with(this, new Twitter(authConfig));
 
@@ -69,8 +70,8 @@ public class MainActivity extends Activity {
         String userName;
         String errorMessage;
 
-        public void success(String un){
-            userName=un;
+        public void success(String userName){
+            this.userName=userName;
             Toast toast=Toast.makeText(MainActivity.this.getApplicationContext(),userName,Toast.LENGTH_LONG);
             toast.show();
 
@@ -78,6 +79,15 @@ public class MainActivity extends Activity {
                 usersOfThisAppOnThisDevice.remove(userName);
 
             usersOfThisAppOnThisDevice. add(0, userName);
+            final String userNameForLogin=userName;
+            Log.d("evtw","success success ");
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    BackEnd.logIn(userNameForLogin);
+                }
+            };
+            thread.start();
 
             MainActivity.this.launchListActivity();
             MainActivity.this.finish();

@@ -11,7 +11,7 @@ The solution comprises three screens and one Activity for each screen:
 
 
 
-2.  The ListOnLineFollowersActivity is the Activity associated with the second screen in the Application.  It appears immediately after logging in.  This Activity lists all the logged-in user’s followers who are also logged in to the app from their own devices.  Unfortunately, at this time, the Activity will list all the logged-in user’s followers (not just the ones logged in to the app from their own devices).  Although the Twitter API seems to have the necessary functionality to accomplish the former behavior, my testing showed that even though the functionality is documented, it has not yet been properly implemented.  See https://twittercommunity.com/t/get-all-users-logged-in-to-app-android/76035.  The code that checks whether a given follower has logged in to the app, is commented out at this point.  
+2.  The ListOnLineFollowersActivity is the Activity associated with the second screen in the Application.  It appears immediately after logging in.  This Activity lists all the logged-in user’s followers who are also logged in to the app from their own devices.  Unfortunately, at this time, the Activity will list all the logged-in user’s followers (not just the ones logged in to the app from their own devices).  Although the Twitter API seems to have the necessary functionality to accomplish the former behavior, my testing showed that even though the functionality is documented, it has not yet been properly implemented.  See https://twittercommunity.com/t/get-all-users-logged-in-to-app-android/76035.  The code that checks whether a given follower has logged in to the app, is commented out at this point.
 
 The list itself shows the user’s logged-in followers, including a the profile pic, username and  bio.
 
@@ -56,3 +56,9 @@ The list it maintains is a list of the User class.
 6.  TwitterMediator:  This class consolidates all Twitter API calls, thereby localizing the impact of any changes by Twitter to one class.
 
 
+
+
+
+Update:
+
+With respect to the issue noted in the ListOnLineFollowersActivity section, regarding functionality that was documented but not yet unimplemented, this issue has been clarified. See the reply from Twitter Staff in the provided link.  The answer, was that Twitter does not have this functionality.  And if one needs it, then it must be implemented using a custom backend.  The text in the javadocs has yet to be enriched to avoid confusion.  I have updated the project with a simple backend.

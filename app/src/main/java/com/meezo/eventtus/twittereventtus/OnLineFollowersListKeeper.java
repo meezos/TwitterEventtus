@@ -67,7 +67,7 @@ class OnLineFollowersListKeeper implements Runnable {
                     String id = jsonObject.getString("id_str");
                     crossCheck.add(new User(id));
 
-                    if(!TwitterMediator.isUserLoggedIn(id)){
+                    if(!BackEnd.isUserLoggedIn(id)){
                         onLineFollowers.remove(new User(id));
                            continue;
                     }

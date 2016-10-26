@@ -202,8 +202,10 @@ public class ListOnLineFollowersActivity extends Activity {
 
         refresh.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if(!waitingForRefresh)
+                if(!waitingForRefresh) {
+                    waitingForRefresh=true;
                     onLineFollowersListKeeper.forceRefresh();
+                }
             }
         });
 

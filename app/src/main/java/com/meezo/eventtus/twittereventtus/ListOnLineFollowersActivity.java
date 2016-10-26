@@ -50,6 +50,7 @@ public class ListOnLineFollowersActivity extends Activity {
     static private ArrayList<User> followers = new ArrayList<>();
     static private boolean didRequestNewUser = false;
 
+    static boolean waitingForRefresh=false;
     static boolean firstClick=true;
     static boolean isActivityInForeground=true;
 
@@ -132,6 +133,7 @@ public class ListOnLineFollowersActivity extends Activity {
                 adapter.notifyDataSetChanged();
             }
         });
+        waitingForRefresh=false;
     }
 
     private void hideMenu(){
@@ -200,7 +202,8 @@ public class ListOnLineFollowersActivity extends Activity {
 
         refresh.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                onLineFollowersListKeeper.forceRefresh();
+                if(!waitingForRefresh)
+                    onLineFollowersListKeeper.forceRefresh();
             }
         });
 

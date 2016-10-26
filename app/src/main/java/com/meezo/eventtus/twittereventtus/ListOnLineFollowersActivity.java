@@ -272,28 +272,34 @@ public class ListOnLineFollowersActivity extends Activity {
                 final String userSelected=MainActivity.getUsersOfThisAppOnThisDevice().get(position);
 
                 MainActivity.getUsersOfThisAppOnThisDevice().remove(userSelected);
+                boolean userToSwitchToLoggedIn;
                 if(position==0)
                     ListOnLineFollowersActivity.this.logOut(userSelected);
 
-                else if(TwitterMediator.switchUser(userSelected)){
-                    MainActivity.getUsersOfThisAppOnThisDevice().add(0,userSelected); synchronized (lock) {
-
-                        followers = new ArrayList<>();
-                    }
-                    handler.post(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            adapter.notifyDataSetChanged();
-                        }
-                    });
-
-                    onLineFollowersListKeeper.forceRefresh();
-                }
                 else{
-                    new BackEndCommunicator().logOut(userSelected);
-                    Toast toast = Toast.makeText(getApplicationContext(), R.string.not_logged_in_message, Toast.LENGTH_LONG);
-                    toast.show();
+                    synchronized (onLineFollowersListKeeper) {
+                        userToSwitchToLoggedIn=TwitterMediator.switchUser(userSelected);
+                        if (userToSwitchToLoggedIn) {
+                            MainActivity.getUsersOfThisAppOnThisDevice().add(0, userSelected);
+                            synchronized (lock) {
+                                followers = new ArrayList<>();
+                            }
+                            handler.post(new Runnable() {
+
+                                @Override
+                                public void run() {
+                                    adapter.notifyDataSetChanged();
+                                }
+                            });
+
+                            onLineFollowersListKeeper.forceRefresh();
+                        }
+                    }
+                    if(!userToSwitchToLoggedIn){
+                        new BackEndCommunicator().logOut(userSelected);
+                        Toast toast = Toast.makeText(getApplicationContext(), R.string.not_logged_in_message, Toast.LENGTH_LONG);
+                        toast.show();
+                    }
                 }
             }
         });

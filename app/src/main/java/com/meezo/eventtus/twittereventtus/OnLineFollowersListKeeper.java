@@ -42,7 +42,7 @@ class OnLineFollowersListKeeper implements Runnable {
         }
     }
 
-    void forceRefresh() {
+    public void forceRefresh() {
         if (thread != null)
             thread.interrupt();
     }
@@ -101,8 +101,12 @@ class OnLineFollowersListKeeper implements Runnable {
                 e.printStackTrace();
             }
         }
-        if (updatedList)
-            ListOnLineFollowersActivity.refreshListView(onLineFollowers);
+        if (updatedList) {
+            synchronized (this) {
+                if(!Thread.currentThread().isInterrupted())
+                    ListOnLineFollowersActivity.refreshListView(onLineFollowers);
+            }
+        }
     }
 
     private ArrayList<String> getTweets(String screenName) {

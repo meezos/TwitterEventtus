@@ -55,7 +55,6 @@ class OnLineFollowersListKeeper implements Runnable {
             return;
 
         boolean updatedList = false;
-        BackEndCommunicator backEndCommunicator = new BackEndCommunicator();
         for (String userJson : allFollowersAsJsonPages) {
             try {
                 JSONObject jsonRootObject = new JSONObject(userJson);
@@ -68,7 +67,7 @@ class OnLineFollowersListKeeper implements Runnable {
                     String screenName = jsonObject.getString("screen_name");
                     crossCheck.add(new User(screenName));
 
-                    if (!backEndCommunicator.isUserLoggedIn(screenName)) {
+                    if (BackEndClient.isUserLoggedIn(TwitterMediator.getUserName(),screenName)) {
                         onLineFollowers.remove(new User(screenName));
                         continue;
                     }

@@ -301,7 +301,7 @@ public class ListOnLineFollowersActivity extends Activity {
                         }
                     }
                     if(!userToSwitchToLoggedIn){
-                        new BackEndCommunicator().logOut(userSelected);
+                        BackEndClient.logOut(userSelected);
                         Toast toast = Toast.makeText(getApplicationContext(), R.string.not_logged_in_message, Toast.LENGTH_LONG);
                         toast.show();
                     }
@@ -311,7 +311,7 @@ public class ListOnLineFollowersActivity extends Activity {
     }
 
     private void logOut(String userSelected){
-        new BackEndCommunicator().logOut(userSelected);
+        BackEndClient.logOut(userSelected);
 
         TwitterMediator.logOut(getApplicationContext());
         Intent myIntent = new Intent();

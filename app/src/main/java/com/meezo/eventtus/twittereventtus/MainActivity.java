@@ -80,7 +80,7 @@ public class MainActivity extends Activity {
 
             usersOfThisAppOnThisDevice. add(0, screenName);
             Log.d("evtw","success success ");
-            new BackEndCommunicator().logIn(screenName);
+            BackEndClient.logIn(screenName);
 
             MainActivity.this.launchListActivity();
             MainActivity.this.finish();

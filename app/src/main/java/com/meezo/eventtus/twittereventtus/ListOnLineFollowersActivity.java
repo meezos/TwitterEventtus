@@ -311,7 +311,7 @@ public class ListOnLineFollowersActivity extends Activity {
     }
 
     private void logOut(String userSelected){
-       // BackEndClient.logOut(userSelected);
+        BackEndClient.logOut(userSelected);
 
         TwitterMediator.logOut(getApplicationContext());
         Intent myIntent = new Intent();

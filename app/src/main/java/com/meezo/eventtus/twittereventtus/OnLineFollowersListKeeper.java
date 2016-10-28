@@ -20,7 +20,7 @@ import java.util.LinkedHashSet;
  * Created by mazenmahmoudarakji on 10/17/16.
  */
 
-@SuppressWarnings("FieldCanBeLocal")
+@SuppressWarnings("FieldCanBeLocal,ResultOfMethodCallIgnored")
 class OnLineFollowersListKeeper implements Runnable {
 
     static File oldUsersDirectory= new File(ConstantValues.FILES_DIRECTORY_PATH + File.separator + "oldUsers");

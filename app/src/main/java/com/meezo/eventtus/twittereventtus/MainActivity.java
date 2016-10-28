@@ -10,21 +10,30 @@ import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 import com.twitter.sdk.android.core.identity.TwitterLoginButton;
 
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 import io.fabric.sdk.android.Fabric;
 
 
 @SuppressWarnings("FieldCanBeLocal")
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements Runnable  {
 
     private TwitterLoginButton loginButton;
     private com.meezo.eventtus.twittereventtus.MainActivity.LoginCallBack logincallBack;
-    private static LinkedList<String> usersOfThisAppOnThisDevice = new LinkedList<>();
+    private static List<String> usersOfThisAppOnThisDevice = Collections.synchronizedList(new LinkedList<String>());
+
+    private Thread thread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if(thread==null) {
+            thread = new Thread(this);
+            thread.start();
+        }
 
         TwitterAuthConfig authConfig = new TwitterAuthConfig(ConstantValues.TWITTER_CONSUMER_KEY, ConstantValues.TWITTER_CONSUMER_SECRET);
         Fabric.with(this, new Twitter(authConfig));
@@ -62,7 +71,24 @@ public class MainActivity extends Activity {
         this.finish();
     }
 
-    public static LinkedList<String> getUsersOfThisAppOnThisDevice(){
+    public void run() {
+        try {
+            while (true) {
+                    if(usersOfThisAppOnThisDevice!=null)
+                        synchronized (usersOfThisAppOnThisDevice) {
+                            for (String user : usersOfThisAppOnThisDevice)
+                                if(!TwitterMediator.isUserLoggedIn(user))
+                                    BackEndClient.logOut(user);
+                        }
+                    Thread.sleep(ConstantValues.FIVE_MINUTES);
+            }
+        } catch (InterruptedException ie) {
+            Log.e("evtw", "exception", ie);
+        }
+        thread=null;
+    }
+
+    public static List<String> getUsersOfThisAppOnThisDevice(){
         return usersOfThisAppOnThisDevice;
     }
 

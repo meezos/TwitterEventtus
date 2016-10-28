@@ -47,7 +47,7 @@ public class ListOnLineFollowersActivity extends Activity {
     static private boolean isSideShowing = false;
 
     static private LazyAdapter adapter;
-    static private ArrayList<User> followers = new ArrayList<>();
+    static private ArrayList<OnLineFollower> followers = new ArrayList<>();
     static private boolean didRequestNewUser = false;
 
     static boolean waitingForRefresh=false;
@@ -121,7 +121,7 @@ public class ListOnLineFollowersActivity extends Activity {
             super.onBackPressed();
     }
 
-    public static void refreshListView(Collection<User> collection) {
+    public static void refreshListView(Collection<OnLineFollower> collection) {
         synchronized (lock) {
 
             followers = new ArrayList<>(collection);
@@ -311,15 +311,19 @@ public class ListOnLineFollowersActivity extends Activity {
     }
 
     private void logOut(String userSelected){
-        BackEndClient.logOut(userSelected);
+       // BackEndClient.logOut(userSelected);
 
         TwitterMediator.logOut(getApplicationContext());
         Intent myIntent = new Intent();
         myIntent.setClass(getApplication(), MainActivity.class);
         startActivity(myIntent);
-        synchronized (followers) {
-            followers =new ArrayList<>();
+        synchronized (onLineFollowersListKeeper) {
+            synchronized (lock) {
+                followers = new ArrayList<>();
+            }
+            onLineFollowersListKeeper.kill();
         }
+        onLineFollowersListKeeper=null;
         this.finish();
     }
 
@@ -327,7 +331,7 @@ public class ListOnLineFollowersActivity extends Activity {
         public void onItemClick(AdapterView parent, View v, int position,
                                 long id) {
 
-            User user;
+            OnLineFollower user;
             synchronized (lock) {
                 user = followers.get(position);
             }
@@ -380,7 +384,7 @@ public class ListOnLineFollowersActivity extends Activity {
             Bitmap pi;
 
             synchronized (lock) {
-                User user = followers.get(position);
+                OnLineFollower user = followers.get(position);
                 sn = user.getScreenName();
                 fn = user.getName();
                 d = user.getDescription();

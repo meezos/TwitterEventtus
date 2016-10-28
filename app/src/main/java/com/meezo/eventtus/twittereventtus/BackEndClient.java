@@ -1,8 +1,9 @@
 package com.meezo.eventtus.twittereventtus;
 
 /*
- * Created by mazenmahmoudarakji on 10/25/16.  Babbage.
+ Created by mazenmahmoudarakji on 10/25/16.  Babbage.
  */
+
 
 import android.util.Log;
 
@@ -20,43 +21,70 @@ import java.util.HashMap;
 
 class BackEndClient {
 
-    private final static String IP_ADDRESS = "10.10.10.16";
-    private final static int PORT_NUMBER = 6783;
 
-    private static HashMap<String,ClientThread> clientThreads =new HashMap<>();
+    private final static String IP_ADDRESS = "10.10.10.16";
+    private final static int PORT_NUMBER = 6777;
+
+    private static HashMap<String, ClientThread> clientThreads = new HashMap<>();
+
 
     public static void logIn(String screenName) {
+        String result;
         ClientThread clientThread = new ClientThread();
-        clientThread.sendMessage("login:"+screenName);
-        clientThreads.put(screenName,clientThread);
+        clientThread.sendMessage("login:" + screenName);
+        clientThreads.put(screenName, clientThread);
         Thread thread = new Thread(clientThread);
         thread.start();
+        result = clientThread.receiveMessage();
+        while (result.equals("error")) {
+            clientThread.sendMessage("login:" + screenName);
+            result = clientThread.receiveMessage();
+        }
     }
 
-    public static boolean isUserLoggedIn(String screenName,String userToCheckScreenName) {
+    public static boolean isUserLoggedIn(String screenName, String userToCheckScreenName) {
+        String result = "error";
         ClientThread clientThread = clientThreads.get(screenName);
-        clientThread.sendMessage("status:" + userToCheckScreenName + '\n');
-        String status = clientThread.receiveMessage();
 
-        return status != null && status.equals("yes");
+        while (result.equals("error")) {
+            clientThread.sendMessage("status:" + userToCheckScreenName);
+            result = clientThread.receiveMessage();
+        }
+        return result.equals("yes");
     }
 
     public static void logOut(String screenName) {
         ClientThread clientThread = clientThreads.get(screenName);
-        clientThread.sendMessage("logout:" + screenName + '\n');
+        if (clientThread != null) {
+            String result = "error";
+            while (result.equals("error")) {
+                clientThread.sendMessage("logout:" + screenName);
+                result = clientThread.receiveMessage();
+            }
+        }
     }
 
     private static class ClientThread implements Runnable {
-        BufferedReader reader;
-        BufferedWriter writer;
+        BufferedReader readerThreadIn;
+        BufferedWriter writerThreadIn;
+
+        BufferedReader readerThreadOut;
+        BufferedWriter writerThreadOut;
 
         ClientThread() {
             try {
                 PipedReader pr = new PipedReader();
                 PipedWriter pw = new PipedWriter();
                 pw.connect(pr);
-                reader = new BufferedReader(pr);
-                writer = new BufferedWriter(pw);
+                PipedReader pr1 = new PipedReader();
+                PipedWriter pw1 = new PipedWriter();
+                pw1.connect(pr1);
+
+                readerThreadIn = new BufferedReader(pr);
+                writerThreadIn = new BufferedWriter(pw);
+
+                readerThreadOut = new BufferedReader(pr1);
+                writerThreadOut = new BufferedWriter(pw1);
             } catch (IOException e) {
                 e.printStackTrace();
                 Log.e("evtw", "exception", e);
@@ -64,24 +92,26 @@ class BackEndClient {
         }
 
         public void run() {
-
+            System.out.println("running thread now now");
             try {
-                InetAddress serverAddress = InetAddress.getByName(IP_ADDRESS);
+                InetAddress serverAddress = InetAddress./*getLocalHost();*/ getByName(IP_ADDRESS);
                 Socket clientSocket = new Socket(serverAddress, PORT_NUMBER);
+
                 DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
+                BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
-                while(true){
-                    String message= reader.readLine();
-                    outToServer.writeBytes(message+'\n');
-                    String screenName = message.substring(0,message.indexOf(":"));
+                while (true) {
+                    String message = readerThreadIn.readLine();
+                    System.out.println(" message received was  " + message);
+                    outToServer.writeBytes(message + '\n');
+                    outToServer.flush();
+                    String screenName = message.substring(message.indexOf(":") + 1);
 
-                    if(message.startsWith("status")){
-                        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                        String reply = inFromServer.readLine();
-                        writer.write(reply+"\n");
-                    }
+                    String reply = inFromServer.readLine();
+                    writerThreadOut.write(reply + "\n");
+                    writerThreadOut.flush();
 
-                    else if(message.startsWith("logout")){
+                    if (reply.equals("ok") && message.startsWith("logout")) {
                         clientThreads.remove(screenName);
                         clientSocket.close();
                         break;
@@ -93,22 +123,24 @@ class BackEndClient {
             }
         }
 
-        private void sendMessage(String message){
+        private void sendMessage(String message) {
             try {
-                writer.write(message + '\n');
-            }
-            catch (IOException e) {
+                System.out.println(" writing message now  " + message);
+                writerThreadIn.write(message + '\n');
+                writerThreadIn.flush();
+
+
+            } catch (IOException e) {
                 e.printStackTrace();
                 Log.e("evtw", "exception", e);
             }
         }
 
-        private String receiveMessage(){
-            String ret=null;
+        private String receiveMessage() {
+            String ret = null;
             try {
-                ret=reader.readLine();
-            }
-            catch (IOException e) {
+                ret = readerThreadOut.readLine();
+            } catch (IOException e) {
                 e.printStackTrace();
                 Log.e("evtw", "exception", e);
             }

@@ -23,7 +23,7 @@ public class ViewFollowerTweetsActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         Intent i = getIntent();
-        User user = (User)i.getSerializableExtra("user");
+        OnLineFollower user = (OnLineFollower)i.getSerializableExtra("user");
 
         setContentView(R.layout.activity_view_follower_tweets);
 

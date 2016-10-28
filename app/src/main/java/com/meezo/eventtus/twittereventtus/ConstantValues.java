@@ -12,4 +12,6 @@ class ConstantValues {
     static String FILES_DIRECTORY_PATH="/data/data/com.meezo.eventtus.twittereventtus/files";
     static String DEFAULT_PROFILE_IMAGE_URL="http://cdn.inquisitr.com/wp-content/uploads/2014/12/fineartamerica.jpg";
     static String DEFAULT_BACKGROUND_IMAGE_URL="https://wallpaperscraft.com/image/the_beatles_silhouette_haircut_mustache_members_2540_3840x1200.jpg";
+    static final int FIVE_MINUTES = 300000;
+
 }

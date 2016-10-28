@@ -197,7 +197,7 @@ public class TwitterDataRetriever {
             serverAddress = new URL(url);
 
             connection = (HttpURLConnection) serverAddress.openConnection();
-            connection.setRequestProperty("User-agent", "OAuth gem v0.4.4");
+            connection.setRequestProperty("OnLineFollower-agent", "OAuth gem v0.4.4");
             connection.connect();
 
             rd = new BufferedReader(new InputStreamReader(

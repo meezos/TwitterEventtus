@@ -11,16 +11,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
-/**
+/*
  * Created by mazenmahmoudarakji on 10/15/16.
  */
 
-@SuppressWarnings("ALL")
-public class User implements Serializable {
+@SuppressWarnings("unused,FieldCanBeLocal,IgnoredResult,ResultOfMethodCallIgnored")
+
+public class OnLineFollower implements Serializable {
 
     static File backgroundImageDirectory =new File(ConstantValues.FILES_DIRECTORY_PATH + File.separator + "backgrounds");
     static File profileImageDirectory= new File(ConstantValues.FILES_DIRECTORY_PATH + File.separator + "profiles");
@@ -57,11 +57,11 @@ public class User implements Serializable {
     private boolean didSaveBackgroundImageToDisk=false;
 
 
-    public User(String sn) {
+    public OnLineFollower(String sn) {
         screenName = sn;
     }
 
-    public User(String s, String n, String pbi, String pi, String d, ArrayList<String> t, boolean getImages) {
+    public OnLineFollower(String s, String n, String pbi, String pi, String d, ArrayList<String> t, boolean getImages) {
         this(s);
         name = n;
         backgroundImageUrl = pbi;
@@ -76,8 +76,7 @@ public class User implements Serializable {
 
     @Override
     public String toString() {
-        String ret = name == null ? screenName : name;
-        return ret;
+        return name == null ? screenName : name;
     }
 
     @Override
@@ -87,12 +86,12 @@ public class User implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof User))
+        if (!(obj instanceof OnLineFollower))
             return false;
         if (obj == this)
             return true;
 
-        User otherUser = (User) obj;
+        OnLineFollower otherUser = (OnLineFollower) obj;
         return otherUser.screenName.equals(this.screenName);
     }
 
@@ -176,9 +175,6 @@ public class User implements Serializable {
             else
                 didSaveProfileImageToDisk=true;
 
-        } catch (MalformedURLException mue) {
-            mue.printStackTrace();
-            Log.e("evtw", "exception", mue);
         } catch (IOException ioe) {
             ioe.printStackTrace();
             Log.e("evtw", "exception", ioe);

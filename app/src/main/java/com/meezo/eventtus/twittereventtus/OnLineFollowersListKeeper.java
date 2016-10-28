@@ -6,6 +6,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -17,12 +23,17 @@ import java.util.LinkedHashSet;
 @SuppressWarnings("FieldCanBeLocal")
 class OnLineFollowersListKeeper implements Runnable {
 
-    private static final Object lock = new Object();
-    private LinkedHashSet<User> onLineFollowers = new LinkedHashSet<>();
-    private final int FIVE_MINUTES = 300000;
+    static File oldUsersDirectory= new File(ConstantValues.FILES_DIRECTORY_PATH + File.separator + "oldUsers");
+
+    static {
+        oldUsersDirectory.mkdirs();
+    }
+
+    private LinkedHashSet<OnLineFollower> onLineFollowers = new LinkedHashSet<>();
     private TwitterDataRetriever twitterDataRetriever = new TwitterDataRetriever();
 
     private Thread thread;
+    private boolean done=false;
 
     OnLineFollowersListKeeper() {
         thread = new Thread(this);
@@ -30,29 +41,40 @@ class OnLineFollowersListKeeper implements Runnable {
     }
 
     public void run() {
-        synchronized (lock) {
             while (true) {
                 try {
                     getOnlineFollowersList();
-                    Thread.sleep(FIVE_MINUTES);
+                    Thread.sleep(ConstantValues.FIVE_MINUTES);
                 } catch (InterruptedException ie) {
                     Log.e("evtw", "exception", ie);
                 }
+                if(done)
+                    break;
             }
-        }
     }
 
     public void forceRefresh() {
+        myForceRefresh();
+    }
+
+    public void kill() {
+        done=true;
+        myForceRefresh();
+    }
+
+    private void myForceRefresh() {
         if (thread != null)
             thread.interrupt();
     }
 
     private void getOnlineFollowersList() {
 
-        ArrayList<String> allFollowersAsJsonPages = twitterDataRetriever.getFollowersList(TwitterMediator.getUserName());
+        ArrayList<String> allFollowersAsJsonPages = twitterDataRetriever.getFollowersList(TwitterMediator.getScreenName());
 
-        if (allFollowersAsJsonPages == null)
+        if (allFollowersAsJsonPages == null) {
+            getOldData();
             return;
+        }
 
         boolean updatedList = false;
         for (String userJson : allFollowersAsJsonPages) {
@@ -60,19 +82,20 @@ class OnLineFollowersListKeeper implements Runnable {
                 JSONObject jsonRootObject = new JSONObject(userJson);
                 JSONArray jsonArray = jsonRootObject.optJSONArray("users");
 
-                HashSet<User> crossCheck = new HashSet<>();
+                HashSet<OnLineFollower> crossCheck = new HashSet<>();
                 for (int i = 0; i < jsonArray.length(); i++) {
 
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
                     String screenName = jsonObject.getString("screen_name");
-                    crossCheck.add(new User(screenName));
+                    crossCheck.add(new OnLineFollower(screenName));
 
-                    if (BackEndClient.isUserLoggedIn(TwitterMediator.getUserName(),screenName)) {
-                        onLineFollowers.remove(new User(screenName));
+                    if (!BackEndClient.isUserLoggedIn(TwitterMediator.getScreenName(),screenName)) {
+                        if(onLineFollowers.remove(new OnLineFollower(screenName)))
+                            updatedList=true;
                         continue;
                     }
 
-                    if (!onLineFollowers.contains(new User(screenName))) {
+                    if (!onLineFollowers.contains(new OnLineFollower(screenName))) {
                         String name = jsonObject.getString("name");
 
                         String bi = jsonObject.getString("profile_background_image_url_https");
@@ -84,13 +107,16 @@ class OnLineFollowersListKeeper implements Runnable {
 
                         String description = jsonObject.getString("description");
                         ArrayList<String> tweets = getTweets(screenName);
-                        User user = new User(screenName, name, profileBackgroundImageUrl, profileImageUrl, description, tweets, true);
-
-                        onLineFollowers.add(user);
+                        if(tweets==null){
+                            getOldData();
+                            return;
+                        }
+                        OnLineFollower onLineFollower = new OnLineFollower(screenName, name, profileBackgroundImageUrl, profileImageUrl, description, tweets, true);
+                        onLineFollowers.add(onLineFollower);
                         updatedList = true;
                     }
                 }
-                for (User u : onLineFollowers)
+                for (OnLineFollower u : onLineFollowers)
                     if (!crossCheck.contains(u)) {
                         onLineFollowers.remove(u);
                         updatedList = true;
@@ -100,10 +126,36 @@ class OnLineFollowersListKeeper implements Runnable {
                 e.printStackTrace();
             }
         }
-        if (updatedList) {
+        if (updatedList){
             synchronized (this) {
+                if(!Thread.currentThread().isInterrupted()) {
+                    ListOnLineFollowersActivity.refreshListView(onLineFollowers);
+                    try {
+                        FileOutputStream outputStream = new FileOutputStream(oldUsersDirectory+File.separator+TwitterMediator.getScreenName());
+                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+                        objectOutputStream.writeObject(onLineFollowers);
+                    }
+                    catch (IOException e){
+                        e.printStackTrace();
+                        Log.e("evtw","exception"+e);
+                    }
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void getOldData(){
+        synchronized (this) {
+            try {
+                FileInputStream inputStream = new FileInputStream(oldUsersDirectory+File.separator+TwitterMediator.getScreenName());
+                ObjectInputStream objectInputStream = new ObjectInputStream(inputStream);
+                onLineFollowers = (LinkedHashSet<OnLineFollower>) objectInputStream.readObject();
                 if(!Thread.currentThread().isInterrupted())
                     ListOnLineFollowersActivity.refreshListView(onLineFollowers);
+            }catch (ClassNotFoundException | IOException e) {
+                e.printStackTrace();
+                Log.e("evtw", "exception" + e);
             }
         }
     }
@@ -111,6 +163,9 @@ class OnLineFollowersListKeeper implements Runnable {
     private ArrayList<String> getTweets(String screenName) {
         ArrayList<String> tweetsList = new ArrayList<>();
         String jsonData = twitterDataRetriever.getMostRecentTweets(screenName, 10);
+
+        if(jsonData==null)
+            return null;
 
         try {
             JSONArray jsonRootArray = new JSONArray(jsonData);

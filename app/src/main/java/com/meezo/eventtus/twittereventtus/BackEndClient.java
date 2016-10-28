@@ -29,39 +29,26 @@ class BackEndClient {
 
 
     public static void logIn(String screenName) {
-        String result;
         ClientThread clientThread = new ClientThread();
         clientThread.sendMessage("login:" + screenName);
         clientThreads.put(screenName, clientThread);
         Thread thread = new Thread(clientThread);
         thread.start();
-        result = clientThread.receiveMessage();
-        while (result.equals("error")) {
-            clientThread.sendMessage("login:" + screenName);
-            result = clientThread.receiveMessage();
-        }
     }
 
     public static boolean isUserLoggedIn(String screenName, String userToCheckScreenName) {
-        String result = "error";
+        String result;
         ClientThread clientThread = clientThreads.get(screenName);
+        clientThread.sendMessage("status:" + userToCheckScreenName);
+        result = clientThread.receiveMessage();
 
-        while (result.equals("error")) {
-            clientThread.sendMessage("status:" + userToCheckScreenName);
-            result = clientThread.receiveMessage();
-        }
-        return result.equals("yes");
+        return result != null && result.equals("yes");
     }
 
     public static void logOut(String screenName) {
         ClientThread clientThread = clientThreads.get(screenName);
-        if (clientThread != null) {
-            String result = "error";
-            while (result.equals("error")) {
-                clientThread.sendMessage("logout:" + screenName);
-                result = clientThread.receiveMessage();
-            }
-        }
+        if (clientThread != null)
+            clientThread.sendMessage("logout:" + screenName);
     }
 
     private static class ClientThread implements Runnable {
@@ -107,11 +94,13 @@ class BackEndClient {
                     outToServer.flush();
                     String screenName = message.substring(message.indexOf(":") + 1);
 
-                    String reply = inFromServer.readLine();
-                    writerThreadOut.write(reply + "\n");
-                    writerThreadOut.flush();
+                    if ( message.startsWith("status")) {
+                        String reply = inFromServer.readLine();
+                        writerThreadOut.write(reply + "\n");
+                        writerThreadOut.flush();
+                    }
 
-                    if (reply.equals("ok") && message.startsWith("logout")) {
+                    if (message.startsWith("logout")) {
                         clientThreads.remove(screenName);
                         clientSocket.close();
                         break;

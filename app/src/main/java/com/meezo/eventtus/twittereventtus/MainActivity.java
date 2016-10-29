@@ -21,9 +21,9 @@ import io.fabric.sdk.android.Fabric;
 
 
 @SuppressWarnings("FieldCanBeLocal,ResultOfMethodCallIgnored")
-public class MainActivity extends Activity implements Runnable  {
+public class MainActivity extends Activity implements Runnable {
 
-    static File loggedInUsersDirectory= new File(ConstantValues.FILES_DIRECTORY_PATH + File.separator + "loggedInUsers");
+    static File loggedInUsersDirectory = new File(ConstantValues.FILES_DIRECTORY_PATH + File.separator + "loggedInUsers");
 
     static {
         loggedInUsersDirectory.mkdirs();
@@ -40,7 +40,7 @@ public class MainActivity extends Activity implements Runnable  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(thread==null) {
+        if (thread == null) {
             thread = new Thread(this);
             thread.start();
         }
@@ -48,7 +48,7 @@ public class MainActivity extends Activity implements Runnable  {
         TwitterAuthConfig authConfig = new TwitterAuthConfig(ConstantValues.TWITTER_CONSUMER_KEY, ConstantValues.TWITTER_CONSUMER_SECRET);
         Fabric.with(this, new Twitter(authConfig));
 
-        if(TwitterMediator.isActiveSessionExisists()){
+        if (TwitterMediator.isActiveSessionExisists()) {
             String loggedInUser = Twitter.getSessionManager().getActiveSession().getUserName();
             reinsertUser(loggedInUser);
             launchListActivity();
@@ -59,8 +59,8 @@ public class MainActivity extends Activity implements Runnable  {
         setContentView(R.layout.activity_main);
 
         loginButton = (TwitterLoginButton) findViewById(R.id.login_button);
-        logincallBack= new com.meezo.eventtus.twittereventtus.MainActivity.LoginCallBack();
-        TwitterMediator.loginAsync(loginButton,logincallBack);
+        logincallBack = new com.meezo.eventtus.twittereventtus.MainActivity.LoginCallBack();
+        TwitterMediator.loginAsync(loginButton, logincallBack);
     }
 
     @Override
@@ -71,7 +71,7 @@ public class MainActivity extends Activity implements Runnable  {
         loginButton.onActivityResult(requestCode, resultCode, data);
     }
 
-      void launchListActivity() {
+    void launchListActivity() {
         Intent myIntent = new Intent();
         myIntent.setClass(getApplication(), ListOnLineFollowersActivity.class);
         startActivity(myIntent);
@@ -93,10 +93,10 @@ public class MainActivity extends Activity implements Runnable  {
         } catch (InterruptedException ie) {
             Log.e("evtw", "exception", ie);
         }
-        thread=null;
+        thread = null;
     }
 
-    public static List<String> getUsersOfThisAppOnThisDevice(){
+    public static List<String> getUsersOfThisAppOnThisDevice() {
         synchronized (lock) {
             File[] files = loggedInUsersDirectory.listFiles();
             Arrays.sort(files, new Comparator<File>() {
@@ -113,25 +113,25 @@ public class MainActivity extends Activity implements Runnable  {
         }
     }
 
-    public static void removeLoggedInUser(String screenName){
+    public static void removeLoggedInUser(String screenName) {
         synchronized (lock) {
             File loggedInUserFile = new File(loggedInUsersDirectory + File.separator + screenName);
             boolean deletedFile = false;
-            if(loggedInUserFile.exists())
+            if (loggedInUserFile.exists())
                 while (!deletedFile)
                     if (loggedInUserFile.delete())
                         deletedFile = true;
         }
     }
 
-    public static void addLoggedInUser(String screenName){
+    public static void addLoggedInUser(String screenName) {
         synchronized (lock) {
             File loggedInUserFile = new File(loggedInUsersDirectory + File.separator + screenName);
             boolean createdFile = false;
             while (!createdFile) {
                 try {
-                    if (loggedInUserFile.createNewFile())
-                        createdFile = true;
+                    loggedInUserFile.createNewFile();
+                    createdFile = true;
                 } catch (IOException e) {
                     e.printStackTrace();
                     Log.e("evtw", "exception", e);
@@ -140,12 +140,12 @@ public class MainActivity extends Activity implements Runnable  {
         }
     }
 
-    private static void reinsertUser(String screenName){
+    private static void reinsertUser(String screenName) {
         synchronized (lock) {
             File loggedInUserFile = new File(loggedInUsersDirectory + File.separator + screenName);
 
             boolean deletedFile = false;
-            if(loggedInUserFile.exists())
+            if (loggedInUserFile.exists())
                 while (!deletedFile)
                     if (loggedInUserFile.delete())
                         deletedFile = true;
@@ -153,8 +153,8 @@ public class MainActivity extends Activity implements Runnable  {
             boolean createdFile = false;
             while (!createdFile) {
                 try {
-                    if (loggedInUserFile.createNewFile())
-                        createdFile = true;
+                    loggedInUserFile.createNewFile();
+                    createdFile = true;
                 } catch (IOException e) {
                     e.printStackTrace();
                     Log.e("evtw", "exception", e);
@@ -163,35 +163,35 @@ public class MainActivity extends Activity implements Runnable  {
         }
     }
 
-    class LoginCallBack{
+    class LoginCallBack {
         String screenName;
         String errorMessage;
 
-        public void success(String screenName){
-            this.screenName =screenName;
-            Toast toast=Toast.makeText(MainActivity.this.getApplicationContext(),screenName,Toast.LENGTH_LONG);
+        public void success(String screenName) {
+            this.screenName = screenName;
+            Toast toast = Toast.makeText(MainActivity.this.getApplicationContext(), screenName, Toast.LENGTH_LONG);
             toast.show();
 
             reinsertUser(screenName);
-            Log.d("evtw","success success ");
+            Log.d("evtw", "success success ");
             BackEndClient.logIn(screenName);
 
             MainActivity.this.launchListActivity();
             MainActivity.this.finish();
         }
 
-        public void failure(String em){
-            errorMessage=em;
-            Log.d("evtw","ERROR LOGIN "+ errorMessage);
+        public void failure(String em) {
+            errorMessage = em;
+            Log.d("evtw", "ERROR LOGIN " + errorMessage);
         }
 
         @SuppressWarnings("unused")
-        String getScreenName(){
+        String getScreenName() {
             return screenName;
         }
 
         @SuppressWarnings("unused")
-        String getErrorMessage(){
+        String getErrorMessage() {
             return errorMessage;
         }
     }

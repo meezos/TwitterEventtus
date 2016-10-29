@@ -57,11 +57,11 @@ class BackEndServer {
                     File screenNameFile = new File(PATH_TO_FILES + File.separator + screenName);
 
                     if (clientRequest.startsWith(LOGIN)) {
-                        boolean createdFile=false;
-                        while(!createdFile) {
+                        boolean createdFile = false;
+                        while (!createdFile) {
                             try {
-                                if(screenNameFile.createNewFile())
-                                    createdFile=true;
+                                screenNameFile.createNewFile();
+                                createdFile = true;
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -77,11 +77,11 @@ class BackEndServer {
                         outToClient.writeBytes(reply);
 
                     } else if (clientRequest.startsWith(LOGOUT)) {
-                        boolean deletedFile=false;
-                        if(screenNameFile.exists())
-                            while(!deletedFile)
-                                if(screenNameFile.delete())
-                                    deletedFile=true;
+                        boolean deletedFile = false;
+                        if (screenNameFile.exists())
+                            while (!deletedFile)
+                                if (screenNameFile.delete())
+                                    deletedFile = true;
 
                         connectionSocket.close();
                         break;

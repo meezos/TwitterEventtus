@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">TwitterEventtus</string>
+    <string name="menu_settings">Settings</string>
+    <string name="sorry_message">نحن نأسف  لا نزال نحاول العثور على أتباعك االذين هم قد قاموا بتسجيل الدخول</string>
+    <string name="not_logged_in_message"> نعتذر لك لم تقم بتسجيل الدخول</string>
+    <string name="log_out">تسجيل الخروج</string>
+    <string name="locale_lang">Current Locale</string>
+</resources>

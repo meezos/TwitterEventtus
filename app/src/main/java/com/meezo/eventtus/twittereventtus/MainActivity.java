@@ -10,19 +10,29 @@ import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.TwitterAuthConfig;
 import com.twitter.sdk.android.core.identity.TwitterLoginButton;
 
-import java.util.Collections;
-import java.util.LinkedList;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import io.fabric.sdk.android.Fabric;
 
 
-@SuppressWarnings("FieldCanBeLocal")
+@SuppressWarnings("FieldCanBeLocal,ResultOfMethodCallIgnored")
 public class MainActivity extends Activity implements Runnable  {
+
+    static File loggedInUsersDirectory= new File(ConstantValues.FILES_DIRECTORY_PATH + File.separator + "loggedInUsers");
+
+    static {
+        loggedInUsersDirectory.mkdirs();
+    }
+
+    private static Object lock = new Object();
 
     private TwitterLoginButton loginButton;
     private com.meezo.eventtus.twittereventtus.MainActivity.LoginCallBack logincallBack;
-    private static List<String> usersOfThisAppOnThisDevice = Collections.synchronizedList(new LinkedList<String>());
 
     private Thread thread;
 
@@ -39,10 +49,8 @@ public class MainActivity extends Activity implements Runnable  {
         Fabric.with(this, new Twitter(authConfig));
 
         if(TwitterMediator.isActiveSessionExisists()){
-
-            usersOfThisAppOnThisDevice.remove(Twitter.getSessionManager().getActiveSession().getUserName());
-            usersOfThisAppOnThisDevice.add(0,Twitter.getSessionManager().getActiveSession().getUserName());
-
+            String loggedInUser = Twitter.getSessionManager().getActiveSession().getUserName();
+            reinsertUser(loggedInUser);
             launchListActivity();
             this.finish();
             return;
@@ -74,13 +82,13 @@ public class MainActivity extends Activity implements Runnable  {
     public void run() {
         try {
             while (true) {
-                    if(usersOfThisAppOnThisDevice!=null)
-                        synchronized (usersOfThisAppOnThisDevice) {
-                            for (String user : usersOfThisAppOnThisDevice)
-                                if(!TwitterMediator.isUserLoggedIn(user))
-                                    BackEndClient.logOut(user);
-                        }
-                    Thread.sleep(ConstantValues.FIVE_MINUTES);
+                synchronized (lock) {
+                    File[] files = loggedInUsersDirectory.listFiles();
+                    for (File user : files)
+                        if (!TwitterMediator.isUserLoggedIn(user.getName()))
+                            BackEndClient.logOut(user.getName());
+                }
+                Thread.sleep(ConstantValues.FIVE_MINUTES);
             }
         } catch (InterruptedException ie) {
             Log.e("evtw", "exception", ie);
@@ -89,7 +97,70 @@ public class MainActivity extends Activity implements Runnable  {
     }
 
     public static List<String> getUsersOfThisAppOnThisDevice(){
-        return usersOfThisAppOnThisDevice;
+        synchronized (lock) {
+            File[] files = loggedInUsersDirectory.listFiles();
+            Arrays.sort(files, new Comparator<File>() {
+                public int compare(File f1, File f2) {
+                    return Long.valueOf(f2.lastModified()).compareTo(f1.lastModified());
+                }
+            });
+
+            List<String> usersOfThisAppOnThisDevice = new ArrayList<>();
+            for (File user : files)
+                usersOfThisAppOnThisDevice.add(user.getName());
+
+            return usersOfThisAppOnThisDevice;
+        }
+    }
+
+    public static void removeLoggedInUser(String screenName){
+        synchronized (lock) {
+            File loggedInUserFile = new File(loggedInUsersDirectory + File.separator + screenName);
+            boolean deletedFile = false;
+            if(loggedInUserFile.exists())
+                while (!deletedFile)
+                    if (loggedInUserFile.delete())
+                        deletedFile = true;
+        }
+    }
+
+    public static void addLoggedInUser(String screenName){
+        synchronized (lock) {
+            File loggedInUserFile = new File(loggedInUsersDirectory + File.separator + screenName);
+            boolean createdFile = false;
+            while (!createdFile) {
+                try {
+                    if (loggedInUserFile.createNewFile())
+                        createdFile = true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.e("evtw", "exception", e);
+                }
+            }
+        }
+    }
+
+    private static void reinsertUser(String screenName){
+        synchronized (lock) {
+            File loggedInUserFile = new File(loggedInUsersDirectory + File.separator + screenName);
+
+            boolean deletedFile = false;
+            if(loggedInUserFile.exists())
+                while (!deletedFile)
+                    if (loggedInUserFile.delete())
+                        deletedFile = true;
+
+            boolean createdFile = false;
+            while (!createdFile) {
+                try {
+                    if (loggedInUserFile.createNewFile())
+                        createdFile = true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Log.e("evtw", "exception", e);
+                }
+            }
+        }
     }
 
     class LoginCallBack{
@@ -101,10 +172,7 @@ public class MainActivity extends Activity implements Runnable  {
             Toast toast=Toast.makeText(MainActivity.this.getApplicationContext(),screenName,Toast.LENGTH_LONG);
             toast.show();
 
-            if(usersOfThisAppOnThisDevice.contains(screenName))
-                usersOfThisAppOnThisDevice.remove(screenName);
-
-            usersOfThisAppOnThisDevice. add(0, screenName);
+            reinsertUser(screenName);
             Log.d("evtw","success success ");
             BackEndClient.logIn(screenName);
 

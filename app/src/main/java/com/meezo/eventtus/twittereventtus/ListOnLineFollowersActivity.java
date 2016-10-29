@@ -54,6 +54,8 @@ public class ListOnLineFollowersActivity extends Activity {
     static boolean firstClick=true;
     static boolean isActivityInForeground=true;
 
+    static ArrayList<String> menuList;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -234,8 +236,8 @@ public class ListOnLineFollowersActivity extends Activity {
                     isMenuShowing = true;
                     showUsers
                             .setImageResource(R.drawable.btn_users_focused);
-                    ArrayList<String> displayList=  new ArrayList<>(MainActivity.getUsersOfThisAppOnThisDevice());
-
+                    menuList=  new ArrayList<>(MainActivity.getUsersOfThisAppOnThisDevice());
+                    ArrayList<String> displayList= new ArrayList<>(menuList);
                     String loggedInUser=displayList.get(0);
                     String logOut = getString(R.string.log_out);
                     String loggedInUserWithOptionToLogOut=loggedInUser+"\n("+logOut+")";
@@ -274,9 +276,9 @@ public class ListOnLineFollowersActivity extends Activity {
 
                 menu.setVisibility(View.GONE);
 
-                final String userSelected=MainActivity.getUsersOfThisAppOnThisDevice().get(position);
+                final String userSelected=menuList.get(position);
 
-                MainActivity.getUsersOfThisAppOnThisDevice().remove(userSelected);
+                MainActivity.removeLoggedInUser(userSelected);
                 boolean userToSwitchToLoggedIn;
                 if(position==0)
                     ListOnLineFollowersActivity.this.logOut(userSelected);
@@ -285,7 +287,7 @@ public class ListOnLineFollowersActivity extends Activity {
                     synchronized (onLineFollowersListKeeper) {
                         userToSwitchToLoggedIn=TwitterMediator.switchUser(userSelected);
                         if (userToSwitchToLoggedIn) {
-                            MainActivity.getUsersOfThisAppOnThisDevice().add(0, userSelected);
+                            MainActivity.addLoggedInUser(userSelected);
                             synchronized (lock) {
                                 followers = new ArrayList<>();
                             }

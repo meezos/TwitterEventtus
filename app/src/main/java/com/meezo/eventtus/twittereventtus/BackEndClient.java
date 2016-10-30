@@ -60,18 +60,18 @@ class BackEndClient {
 
         ClientThread() {
             try {
-                PipedReader pr = new PipedReader();
-                PipedWriter pw = new PipedWriter();
-                pw.connect(pr);
-                PipedReader pr1 = new PipedReader();
-                PipedWriter pw1 = new PipedWriter();
-                pw1.connect(pr1);
+                PipedReader prThreadIn = new PipedReader();
+                PipedWriter pwThreadIn = new PipedWriter();
+                pwThreadIn.connect(prThreadIn);
+                PipedReader prThreadOut = new PipedReader();
+                PipedWriter pwThreadOut = new PipedWriter();
+                pwThreadOut.connect(prThreadOut);
 
-                readerThreadIn = new BufferedReader(pr);
-                writerThreadIn = new BufferedWriter(pw);
+                readerThreadIn = new BufferedReader(prThreadIn);
+                writerThreadIn = new BufferedWriter(pwThreadIn);
 
-                readerThreadOut = new BufferedReader(pr1);
-                writerThreadOut = new BufferedWriter(pw1);
+                readerThreadOut = new BufferedReader(prThreadOut);
+                writerThreadOut = new BufferedWriter(pwThreadOut);
             } catch (IOException e) {
                 e.printStackTrace();
                 Log.e("evtw", "exception", e);
